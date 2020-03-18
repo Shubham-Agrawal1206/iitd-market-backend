@@ -26,7 +26,7 @@ router.post("/", isLoggedIn, function(req, res){
            console.log(err);
            res.redirect("/campgrounds");
        } else {
-        Comment.create(req.body.comment, function(err, comment){
+        Comment.create(req.body.comment,async function(err, comment){
            if(err){
                console.log(err);
            } else {
@@ -34,9 +34,9 @@ router.post("/", isLoggedIn, function(req, res){
                comment.author.id = req.user._id;
                comment.author.username = req.user.username;
                //save comment
-               comment.save();
-               campground.comments.push(comment);
-               campground.save();
+               await comment.save();
+               await campground.comments.push(comment);
+               await campground.save();
                console.log(comment);
                req.flash('success', 'Created a comment!');
                return res.redirect('/campgrounds/' + campground._id);

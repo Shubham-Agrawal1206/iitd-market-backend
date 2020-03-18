@@ -75,9 +75,15 @@ router.get("/", function(req, res){
 //CREATE - add new campground to DB
 router.post("/", isLoggedIn, upload.single('image'), function(req, res){
   // get data from form and add to campgrounds array
-  cloudinary.uploader.upload(req.file.path,function(result){
+  console.log(req.file);
+  cloudinary.v2.uploader.upload(req.file.path,function(err,result){
+    if(err) {
+      req.flash('error', err.message);
+      return res.redirect('back');
+    }
   var name = req.body.name;
   var image = result.secure_url;
+  var imageId = result.public_id;
   var desc = req.body.description;
   var author = {
       id: req.user._id,
@@ -94,7 +100,7 @@ router.post("/", isLoggedIn, upload.single('image'), function(req, res){
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    var newCampground = {name: name, image: image, description: desc, cost: cost, author:author, location: location, lat: lat, lng: lng};
+    var newCampground = {name: name, image: image, imageId:imageId,description: desc, cost: cost, author:author, location: location, lat: lat, lng: lng};
     console.log(newCampground);
     // Create a new campground and save to DB
     Campground.create(newCampground, function(err, newlyCreated){
@@ -103,7 +109,7 @@ router.post("/", isLoggedIn, upload.single('image'), function(req, res){
         } else {
             //redirect back to campgrounds page
             console.log(newlyCreated);
-            res.redirect("/campgrounds");
+            return res.redirect("/campgrounds");
         }
     });
   });
@@ -152,17 +158,34 @@ router.get("/:id/edit", isLoggedIn, checkUserCampground, function(req, res){
 });
 
 // PUT - updates campground in the database
-router.put("/:id",isLoggedIn, function(req, res){
+router.put("/:id",isLoggedIn, upload.single('image'), function(req, res){
   geocoder1.geocode(req.body.location, function (err, data) {
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    var newData = {name: req.body.name, image: req.body.image, description: req.body.description, cost: req.body.cost, location: location, lat: lat, lng: lng};
-    Campground.findByIdAndUpdate(req.params.id, {$set: newData}, function(err, campground){
+    Campground.findById(req.params.id,async function(err, campground){
         if(err){
             req.flash("error", err.message);
             res.redirect("back");
         } else {
+          if(req.file){
+            try{
+              await cloudinary.v2.uploader.destroy(campground.imageId);
+              var result = await cloudinary.v2.uploader.upload(req.file.path); 
+              campground.imageId = result.public_id;
+              campground.image = result.secure_url; 
+            } catch(err){
+              req.flash("error", err.message);
+              return res.redirect("back");
+            }
+           }
+           campground.name = req.body.name;
+           campground.description = req.body.description;
+           campground.cost = req.body.cost;
+           campground.location = location;
+           campground.lat = lat;
+           campground.lng = lng;
+           await campground.save();
             req.flash("success","Successfully Updated!");
             res.redirect("/campgrounds/" + campground._id);
         }
@@ -176,11 +199,12 @@ router.delete("/:id", isLoggedIn, checkUserCampground, function(req, res) {
       _id: {
         $in: req.campground.comments
       }
-    }, function(err) {
+    },async function(err) {
       if(err) {
           req.flash('error', err.message);
           res.redirect('/');
       } else {
+        await cloudinary.v2.uploader.destroy(campground.imageId);
           req.campground.remove(function(err) {
             if(err) {
                 req.flash('error', err.message);
