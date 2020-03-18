@@ -172,13 +172,13 @@ router.post('/reset/:token', function(req, res) {
         var smtpTransport = nodemailer.createTransport({
           service: 'Gmail', 
           auth: {
-            user: 'learntocodeinfo@gmail.com',
+            user: 'see9677@gmail.com',
             pass: process.env.GMAILPW
           }
         });
         var mailOptions = {
           to: user.email,
-          from: 'learntocodeinfo@mail.com',
+          from: 'see9677@mail.com',
           subject: 'Your password has been changed',
           text: 'Hello,\n\n' +
             'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
