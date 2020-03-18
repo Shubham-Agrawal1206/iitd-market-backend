@@ -20,7 +20,7 @@ router.get("/register", function(req, res){
 
 //User Profile
 router.get("/users/:id",function(req,res){
-    User.findById(req.params.id,function(err,foundUser){
+    User.findById(req.params.id).populate('followers').exec(function(err,foundUser){
         if(err){
             req.flash("error","Something went wrong");
             return res.redirect("/");
@@ -193,5 +193,46 @@ router.post('/reset/:token', function(req, res) {
     });
 });
   
+// follow user
+router.get('/follow/:id', isLoggedIn, async function(req, res) {
+  try {
+    let user = await User.findById(req.params.id);
+    await user.followers.push(req.user._id);
+    await user.save();
+    req.flash('success', 'Successfully followed ' + user.username + '!');
+    res.redirect('/users/' + req.params.id);
+  } catch(err) {
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+});
+
+// view all notifications
+router.get('/notifications', isLoggedIn, async function(req, res) {
+  try {
+    let user = await User.findById(req.user._id).populate({
+      path: 'notifications',
+      options: { sort: { "_id": -1 } }
+    }).exec();
+    let allNotifications = user.notifications;
+    res.render('notifications/index', { allNotifications });
+  } catch(err) {
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+});
+
+// handle notification
+router.get('/notifications/:id', isLoggedIn, async function(req, res) {
+  try {
+    let notification = await Notification.findById(req.params.id);
+    notification.isRead = true;
+    await notification.save();
+    res.redirect(`/campgrounds/${notification.campgroundId}`);
+  } catch(err) {
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+});
 
 module.exports = router;

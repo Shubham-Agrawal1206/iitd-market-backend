@@ -90,7 +90,7 @@ router.post("/", isLoggedIn, upload.single('image'), function(req, res){
       username: req.user.username
   }
   var cost = req.body.cost;
-  geocoder1.geocode(req.body.location, function (err, data) {
+  geocoder1.geocode(req.body.location,async function (err, data) {
     if (err || data.status === 'ZERO_RESULTS') {
       console.log(err,data);
       req.flash('error', 'Invalid address');
@@ -103,15 +103,33 @@ router.post("/", isLoggedIn, upload.single('image'), function(req, res){
     var newCampground = {name: name, image: image, imageId:imageId,description: desc, cost: cost, author:author, location: location, lat: lat, lng: lng};
     console.log(newCampground);
     // Create a new campground and save to DB
-    Campground.create(newCampground, function(err, newlyCreated){
-        if(err){
-            console.log(err);
-        } else {
-            //redirect back to campgrounds page
-            console.log(newlyCreated);
-            return res.redirect("/campgrounds");
-        }
-    });
+    try {
+      let campground = await Campground.create(newCampground);
+      let user = await User.findById(req.user._id).populate('followers').exec();
+      let newNotification = {
+        username: req.user.username,
+        campgroundId: campground.id
+      }
+      for(const follower of user.followers) {
+        let notification = await Notification.create(newNotification);
+        await follower.notifications.push(notification);
+        follower.save();
+      }
+      //redirect back to campgrounds page
+      res.redirect(`/campgrounds/${campground.id}`);
+    } catch(err) {
+      req.flash('error', err.message);
+      return res.redirect('back');
+    }
+    // Campground.create(newCampground, function(err, newlyCreated){
+    //     if(err){
+    //         console.log(err);
+    //     } else {
+    //         //redirect back to campgrounds page
+    //         console.log(newlyCreated);
+    //         return res.redirect("/campgrounds");
+    //     }
+    // });
   });
 });
 });
