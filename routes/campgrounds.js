@@ -204,7 +204,7 @@ router.delete("/:id", isLoggedIn, checkUserCampground, function(req, res) {
           req.flash('error', err.message);
           res.redirect('/');
       } else {
-        await cloudinary.v2.uploader.destroy(campground.imageId);
+        await cloudinary.v2.uploader.destroy(req.campground.imageId);
           req.campground.remove(function(err) {
             if(err) {
                 req.flash('error', err.message);
