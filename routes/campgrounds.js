@@ -17,6 +17,27 @@ var options = {
 
 var geocoder1 = NodeGeocoder(options); 
 
+var multer = require('multer');
+var storage = multer.diskStorage({
+  filename: function(req, file, callback) {
+    callback(null, Date.now() + file.originalname);
+  }
+});
+var imageFilter = function (req, file, cb) {
+    // accept image files only
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+};
+var upload = multer({ storage: storage, fileFilter: imageFilter})
+
+var cloudinary = require('cloudinary');
+cloudinary.config({ 
+  cloud_name: 'cloudxx365', 
+  api_key: process.env.CLOUDINARY_API_KEY, 
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Define escapeRegex function for search feature
 function escapeRegex(text) {
@@ -52,10 +73,11 @@ router.get("/", function(req, res){
 });
 
 //CREATE - add new campground to DB
-router.post("/", isLoggedIn, function(req, res){
+router.post("/", isLoggedIn, upload.single('image'), function(req, res){
   // get data from form and add to campgrounds array
+  cloudinary.uploader.upload(req.file.path,function(result){
   var name = req.body.name;
-  var image = req.body.image;
+  var image = result.secure_url;
   var desc = req.body.description;
   var author = {
       id: req.user._id,
@@ -85,6 +107,7 @@ router.post("/", isLoggedIn, function(req, res){
         }
     });
   });
+});
 });
 
 //NEW - show form to create new campground
