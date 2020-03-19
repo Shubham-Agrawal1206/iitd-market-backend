@@ -7,6 +7,8 @@ var pathx = require("path");
 var async = require("async");
 var nodemailer = require("nodemailer");
 var crypto = require("crypto");
+var middleware = require("../middleware");
+var { isLoggedIn, checkUserCampground, checkUserComment, isAdmin, isSafe } = middleware; // destructuring assignment
 
 //root route
 router.get("/", function(req, res){

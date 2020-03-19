@@ -2,6 +2,7 @@ var express = require("express");
 var router  = express.Router();
 var Campground = require("../models/campground");
 var Comment = require("../models/comment");
+var User = require("../models/user");
 var middleware = require("../middleware");
 var NodeGeocoder = require("node-geocoder");
 var geocoder = require('geocoder');

@@ -1,34 +1,27 @@
 <%- include ("./partials/header") %>
     <div class="row">
-        <h1 style="text-align: center">Sign Up</h1>
-        <div style="width: 30%; margin: 25px auto;">
-            <form action="/register" method="post">
-                <div class="form-group">
-                    <input class="form-control" type="text" name="username" placeholder="username">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="password" name="password" placeholder="password">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="text" name="firstName" placeholder="First Name">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="text" name="lastName" placeholder="Last Name">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="email" name="email" placeholder="some@example.com">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="text" name="avatar" placeholder="Avatar URL">
-                </div>
-                <div class="form-group">
-                    <input class="form-control" type="text" name="adminCode" placeholder="Admin Code">
-                </div>
-                <div class="form-group">
-                    <button class="btn btn-lg btn-primary btn-block">Sign Up!</button>
-                </div>
+        <div class="col-md-12">
+            <form class="form-signin" action="/register" method="post">
+                <h1 class="h3 mb-3 font-weight-normal">Please sign up</h1>
+                <label for="inputUsername" class="sr-only">Username</label>
+                <input type="text" id="inputUsername" class="form-control" name="username" placeholder="Username" required autofocus>
+                <label for="inputPassword" class="sr-only">Password</label>
+                <input type="password" id="inputPassword" class="form-control" name="password" placeholder="Password" required>
+                <label for="inputFirstName" class="sr-only">First Name</label>
+                <input class="form-control" id="inputFirstName" type="text" name="firstName" placeholder="First Name" required>
+                <label for="inputLastName" class="sr-only">Last Name</label>
+                <input class="form-control" id="inputLastName" type="text" name="lastName" placeholder="Last Name" required>
+                <label for="inputEmail" class="sr-only">Email</label>
+                <input class="form-control" id="inputEmail" type="email" name="email" placeholder="some@example.com" required>
+                <label for="inputAvatar" class="sr-only">Avatar URL</label>
+                <input class="form-control" id="inputAvatar" type="text" name="avatar" placeholder="Avatar URL" required>
+                <label for="inputAdmin" class="sr-only">Admin Code</label>
+                <input class="form-control" id="inputAdmin" type="text" name="adminCode" placeholder="Admin Code">
+                <button class="btn btn-lg btn-primary btn-block">Sign Up!</button>
             </form>
-            <a href="/campgrounds">Go Back</a>
+            <div class="form-signin">
+                <a href="/campgrounds">Go Back</a>
+            </div>
         </div>
     </div>
 <%- include ("./partials/footer") %>

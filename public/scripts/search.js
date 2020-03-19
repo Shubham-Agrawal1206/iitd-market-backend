@@ -7,15 +7,13 @@ $('#campground-search').on('input', function() {
     $('#campground-grid').html('');
     data.forEach(function(campground) {
       $('#campground-grid').append(`
-        <div class="col-md-3 col-sm-6">
-          <div class="thumbnail">
-            <img src="${ campground.image }">
-            <div class="caption">
-              <h4>${ campground.name }</h4>
-            </div>
-            <p>
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+          <div class="card">
+            <img class="card-img-top" src="${ campground.image }">
+            <div class="card-body">
+              <h5 class="card-title">${ campground.name }</h5>
               <a href="/campgrounds/${ campground._id }" class="btn btn-primary">More Info</a>
-            </p>
+            </div>
           </div>
         </div>
       `);
