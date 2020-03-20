@@ -13,7 +13,7 @@ var express     = require("express"),
     User        = require("./models/user"),
     session = require("express-session"),
     methodOverride = require("method-override");
-
+require("./models/notification");
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     courseRoutes = require("./routes/course"),

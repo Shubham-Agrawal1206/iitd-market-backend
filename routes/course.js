@@ -272,7 +272,7 @@ router.delete("/:id", middleware.isLoggedIn, middleware.checkUserCourse, functio
       } else {
         await cloudinary.v2.uploader.destroy(req.course.imageId);
         // deletes all reviews associated with the course
-        Review.remove({"_id": {$in: course.reviews}}, function (err) {
+        Review.remove({"_id": {$in: req.course.reviews}}, function (err) {
           if (err) {
               console.log(err);
               return res.redirect("/course");

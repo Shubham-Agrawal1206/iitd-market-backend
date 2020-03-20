@@ -62,14 +62,14 @@
         <hr>
         <p class="card-text"><%= course.description %></p>
         <% if(currentUser && course.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
-        <a class="btn btn-warning" href="/course/<%= course._id %>/edit">Edit</a>
-        <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
-          <button class="btn btn-danger">Delete</button>
-        </form>
+          <a class="btn btn-warning" href="/course/<%= course._id %>/edit">Edit</a>
+          <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
+            <button class="btn btn-danger">Delete</button>
+          </form>
         <% } %>
-      <div style="margin-top: 10px;">
-        <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>
-      </div>
+        <div style="margin-top: 10px;">
+          <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>
+        </div>
       </div>
     </div>
     <div class="card">
@@ -84,43 +84,44 @@
             <span class="fa fa-star <% if (course.rating > 3.5) { %> checked <% } %>"></span>
             <span class="fa fa-star <% if (course.rating > 4.5) { %> checked <% } %>"></span>
             <em>(total reviews: <%= course.reviews.length %>)</em>
-        </p>
-        <h6> Current course rating: <strong><%= course.rating.toFixed(2) %></strong></h6>
-        <p><h5 class="card-title">Latest reviews for this course:</h4></p>
-        <hr style="margin-top: 0;">
-        <div class="row">
-          <% course.reviews.slice(0, 5).forEach(function(review){ %>
-            <div class="col-md-12 mb-2">
-              <div class="card">
-                <div class="card-body">
-                  <div class="float-right">
-                    <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
+          </p>
+          <h6> Current course rating: <strong><%= course.rating.toFixed(2) %></strong></h6>
+          <p><h5 class="card-title">Latest reviews for this course:</h4></p>
+          <hr style="margin-top: 0;">
+          <div class="row">
+            <% course.reviews.slice(0, 5).forEach(function(review){ %>
+              <div class="col-md-12 mb-2">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="float-right">
+                      <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
+                    </div>
+                    <div class="float-left">
+                      <div class="card-title">Review by: <strong><%= review.author.username %></strong></div>
+                      <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
+                      <div class="card-text"><%= review.text %></div>
+                    </div>
+                    <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                      <div class="float-right col-auto">
+                        <a href="/course/<%=course._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                          <button class="btn btn-sm btn-danger">DELETE</button>
+                        </form>
+                      </div>
+                    <% } %>
                   </div>
-                  <div class="float-left">
-                  <div class="card-title">Review by: <strong><%= review.author.username %></strong></div>
-                  <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
-                  <div class="card-text"><%= review.text %></div>
-                </div>
-                <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
-                  <div class="float-right col-auto">
-                    <a href="/course/<%=course._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                    <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
-                      <button class="btn btn-sm btn-danger">DELETE</button>
-                    </form>
-                  </div>
-                  <% } %>
                 </div>
               </div>
+            <% }) %>
+            <div>
+              <h4 class="card-text my-2 ml-3"><a href="/course/<%= course._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
             </div>
-          <% }) %>
-          <div>
-            <h4 class="card-text my-2 ml-3"><a href="/course/<%= course._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
-        </div>
+          </div>
         <% } %>
         <div class="card-text col-auto">
             <a class="btn btn-primary btn-lg <% if (currentUser && course.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/course/<%= course._id %>/reviews/new">Write a New Review</a>
         </div>
-        </div>
+        <!-- </div> -->
       </div>
     </div>
     <div class="card">
@@ -130,35 +131,33 @@
         </div>
         <hr>
         <div class="row">
-        <% course.comments.forEach(function(comment){ %>
-          <div class="col-md-12 mb-2">
-            <div class="card">
-              <div class="card-body">
-                <div class="float-left">
-                  <p class="card-title"><%= comment.author.username %></p>
-                  <p class="card-text"><%= comment.text %></p>
-                </div>
-                <div class="float-right">
-                  <p><%= moment(comment.createdAt).fromNow() %></p>
-                  
-                  <% if(currentUser && comment.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
-                  <div class="float-right">
-                    <a href="/course/<%=course._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                    <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
-                      <button class="btn btn-sm btn-danger">DELETE</button>
-                    </form>
+          <% course.comments.forEach(function(comment){ %>
+            <div class="col-md-12 mb-2">
+              <div class="card">
+                <div class="card-body">
+                  <div class="float-left">
+                    <p class="card-title"><%= comment.author.username %></p>
+                    <p class="card-text"><%= comment.text %></p>
                   </div>
-                  <% } %>
+                  <div class="float-right">
+                    <p><%= moment(comment.createdAt).fromNow() %></p>
+                    <% if(currentUser && comment.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                      <div class="float-right">
+                        <a href="/course/<%=course._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                        <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+                          <button class="btn btn-sm btn-danger">DELETE</button>
+                        </form>
+                      </div>
+                    <% } %>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
           <% }) %>
         </div>
       </div>
     </div>
   </div>
-</div>
 </div>
 <script>
   function initMap() {

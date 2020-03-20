@@ -1,6 +1,6 @@
 const express = require("express");
 const router  = express.Router({mergeParams: true});
-const Course = require("../models/coure");
+const Course = require("../models/course");
 const Comment = require("../models/comment");
 const middleware = require("../middleware");
 
