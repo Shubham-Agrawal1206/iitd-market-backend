@@ -1,15 +1,21 @@
 var mongoose = require("mongoose");
 
-var campgroundSchema = new mongoose.Schema({
-   name: String,
+var courseSchema = new mongoose.Schema({
+   title: String,
    image: String,
    imageId: String,
    description: String,
-   cost: Number,
+   studentNo: {
+      type:Number,
+      min:0,
+      validate:{
+         validator:Number.isInteger,
+         message:"{VALUE} is not an integer value."
+      }
+   },
    location: String,
    lat: Number,
    lng: Number,
-   createdAt: { type: Date, default: Date.now },
    author: {
       id: {
          type: mongoose.Schema.Types.ObjectId,
@@ -33,6 +39,9 @@ var campgroundSchema = new mongoose.Schema({
       type:Number,
       default:0
    }
+},
+{
+   timestamps:true
 });
 
-module.exports = mongoose.model("Campground", campgroundSchema);
+module.exports = mongoose.model("Course", courseSchema);

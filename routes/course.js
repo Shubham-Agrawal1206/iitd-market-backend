@@ -1,6 +1,6 @@
 var express = require("express");
 var router  = express.Router();
-var Campground = require("../models/campground");
+var Course = require("../models/course");
 var Comment = require("../models/comment");
 var Review = require("../models/review");
 var User = require("../models/user");
@@ -8,7 +8,6 @@ var middleware = require("../middleware");
 var NodeGeocoder = require("node-geocoder");
 var geocoder = require('geocoder');
 var request = require("request");
-var { isLoggedIn, checkUserCampground, checkUserComment, isAdmin, isSafe } = middleware; // destructuring assignment
 
 var options = {
   provider : 'google',
@@ -46,7 +45,7 @@ function escapeRegex(text) {
     return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
 };
 
-    //INDEX - show all campgrounds
+    //INDEX - show all courses
 // router.get("/", function(req, res){
 //   var perPage = 8;
 //   var pageQuery = parseInt(req.query.page);
@@ -54,8 +53,8 @@ function escapeRegex(text) {
 //   var noMatch = null;
 //     if(req.query.search) {
 //       const regex = new RegExp(escapeRegex(req.query.search), 'gi');
-//       Campground.find({name: regex}).skip((perPage * pageNumber) - perPage).limit(perPage).exec(function (err, allCampgrounds) {
-//         Campground.count({name: regex}).exec(function (err, count) {
+//       Course.find({name: regex}).skip((perPage * pageNumber) - perPage).limit(perPage).exec(function (err, allCampgrounds) {
+//         Course.count({name: regex}).exec(function (err, count) {
 //           if (err) {
 //             console.log(err);
 //             return res.redirect("back");
@@ -75,8 +74,8 @@ function escapeRegex(text) {
 //       });
 //     } else {
 //       // get all campgrounds from DB
-//       Campground.find({}).skip((perPage * pageNumber) - perPage).limit(perPage).exec(function (err, allCampgrounds) {
-//         Campground.count().exec(function (err, count) {
+//       Course.find({}).skip((perPage * pageNumber) - perPage).limit(perPage).exec(function (err, allCampgrounds) {
+//         Course.count().exec(function (err, count) {
 //           if (err) {
 //             console.log(err);
 //           } else {
@@ -93,44 +92,44 @@ function escapeRegex(text) {
 //     }
 // });
 
-//INDEX - show all campgrounds
+//INDEX - show all courses
 router.get("/", function(req, res){
   if(req.query.search && req.xhr) {
       const regex = new RegExp(escapeRegex(req.query.search), 'gi');
-      // Get all campgrounds from DB
-      Campground.find({name: regex}, function(err, allCampgrounds){
+      // Get all courses from DB
+      Course.find({title: regex}, function(err, allCourse){
          if(err){
             console.log(err);
          } else {
-            res.status(200).json(allCampgrounds);
+            res.status(200).json(allCourse);
          }
       });
   } else {
-      // Get all campgrounds from DB
-      Campground.find({}, function(err, allCampgrounds){
+      // Get all courses from DB
+      Course.find({}, function(err, allCourse){
          if(err){
              console.log(err);
          } else {
             if(req.xhr) {
-              res.json(allCampgrounds);
+              res.json(allCourse);
             } else {
-              res.render("campgrounds/index",{campgrounds: allCampgrounds, page: 'campgrounds'});
+              res.render("course/index",{course: allCourse, page: 'course'});
             }
          }
       });
   }
 });
 
-//CREATE - add new campground to DB
-router.post("/", isLoggedIn, upload.single('image'), function(req, res){
-  // get data from form and add to campgrounds array
+//CREATE - add new course to DB
+router.post("/", middleware.isLoggedIn, upload.single('image'), function(req, res){
+  // get data from form and add to courses array
   console.log(req.file);
   cloudinary.v2.uploader.upload(req.file.path,function(err,result){
     if(err) {
       req.flash('error', err.message);
       return res.redirect('back');
     }
-  var name = req.body.name;
+  var title = req.body.title;
   var image = result.secure_url;
   var imageId = result.public_id;
   var desc = req.body.description;
@@ -138,156 +137,153 @@ router.post("/", isLoggedIn, upload.single('image'), function(req, res){
       id: req.user._id,
       username: req.user.username
   }
-  var cost = req.body.cost;
+  var studentNo = req.body.studentNo;
   geocoder1.geocode(req.body.location,async function (err, data) {
     if (err || data.status === 'ZERO_RESULTS') {
       console.log(err,data);
       req.flash('error', 'Invalid address');
       return res.redirect('back');
     }
-    console.log(data);
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    var newCampground = {name: name, image: image, imageId:imageId,description: desc, cost: cost, author:author, location: location, lat: lat, lng: lng};
-    console.log(newCampground);
-    // Create a new campground and save to DB
+    var newCourse = {title: title, image: image, imageId:imageId,description: desc, studentNo: studentNo, author:author, location: location, lat: lat, lng: lng};
+    // Create a new course and save to DB
     try {
-      let campground = await Campground.create(newCampground);
+      let course = await Course.create(newCourse);
       let user = await User.findById(req.user._id).populate('followers').exec();
       let newNotification = {
         username: req.user.username,
-        campgroundId: campground.id
+        courseId: course.id
       }
       for(const follower of user.followers) {
         let notification = await Notification.create(newNotification);
         await follower.notifications.push(notification);
         follower.save();
       }
-      //redirect back to campgrounds page
-      res.redirect(`/campgrounds/${campground.id}`);
+      //redirect back to courses page
+      res.redirect(`/course/${course.id}`);
     } catch(err) {
       req.flash('error', err.message);
       return res.redirect('back');
     }
-    // Campground.create(newCampground, function(err, newlyCreated){
+    // Course.create(newcourse, function(err, newlyCreated){
     //     if(err){
     //         console.log(err);
     //     } else {
-    //         //redirect back to campgrounds page
+    //         //redirect back to courses page
     //         console.log(newlyCreated);
-    //         return res.redirect("/campgrounds");
+    //         return res.redirect("/courses");
     //     }
     // });
   });
 });
 });
 
-//NEW - show form to create new campground
-router.get("/new", isLoggedIn, function(req, res){
-   res.render("campgrounds/new"); 
+//NEW - show form to create new course
+router.get("/new", middleware.isLoggedIn, function(req, res){
+   res.render("course/new"); 
 });
 
-// SHOW - shows more info about one campground
+// SHOW - shows more info about one course
 router.get("/:id", function(req, res){
-    //find the campground with provided ID
-    Campground.findById(req.params.id).populate("comments").populate({
+    //find the course with provided ID
+    Course.findById(req.params.id).populate("comments").populate({
       path:"reviews",
       options:{sort:{createdAt:-1}}
-    }).exec(function(err, foundCampground){
-        if(err || !foundCampground){
+    }).exec(function(err, foundCourse){
+        if(err || !foundCourse){
             console.log(err);
-            req.flash('error', 'Sorry, that campground does not exist!');
-            return res.redirect('/campgrounds');
+            req.flash('error', 'Sorry, that course does not exist!');
+            return res.redirect('/course');
         }
-        request("https://www.metaweather.com/api/location/search/?lattlong="+foundCampground.lat+","+foundCampground.lng,{json:true},function(err,resp,body){
+        request("https://www.metaweather.com/api/location/search/?lattlong="+foundCourse.lat+","+foundCourse.lng,{json:true},function(err,resp,body){
           if(err)
           {
             req.flash("error","Weather not available");
-            return res.render("campgrounds/show", {campground: foundCampground,weather:[]});
+            return res.render("course/show", {course: foundCourse,weather:[]});
           }
           var wid = body[0].woeid;
           request("https://www.metaweather.com/api/location/"+wid,{json:true},function(error,resp,mbody){
             if(error){
               req.flash("error","Weather not available");
-              return res.render("campgrounds/show", {campground: foundCampground,weather:[]});
+              return res.render("course/show", {course: foundCourse,weather:[]});
             }
-            console.log(mbody);
             var mw = mbody.consolidated_weather;
-            //render show template with that campground
-            res.render("campgrounds/show", {campground: foundCampground,weather:mw});
+            //render show template with that course
+            res.render("course/show", {course: foundCourse,weather:mw});
           });
         });
     });
 });
 
-// EDIT - shows edit form for a campground
-router.get("/:id/edit", isLoggedIn, checkUserCampground, function(req, res){
-  //render edit template with that campground
-  res.render("campgrounds/edit", {campground: req.campground});
+// EDIT - shows edit form for a course
+router.get("/:id/edit", middleware.isLoggedIn, middleware.checkUserCourse, function(req, res){
+  //render edit template with that course
+  res.render("course/edit", {course: req.course});
 });
 
-// PUT - updates campground in the database
-router.put("/:id",isLoggedIn, upload.single('image'), function(req, res){
+// PUT - updates course in the database
+router.put("/:id",middleware.isLoggedIn, upload.single('image'), function(req, res){
   geocoder1.geocode(req.body.location, function (err, data) {
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    Campground.findById(req.params.id,async function(err, campground){
+    Course.findById(req.params.id,async function(err, course){
         if(err){
             req.flash("error", err.message);
             res.redirect("back");
         } else {
           if(req.file){
             try{
-              await cloudinary.v2.uploader.destroy(campground.imageId);
+              await cloudinary.v2.uploader.destroy(course.imageId);
               var result = await cloudinary.v2.uploader.upload(req.file.path); 
-              campground.imageId = result.public_id;
-              campground.image = result.secure_url; 
+              course.imageId = result.public_id;
+              course.image = result.secure_url; 
             } catch(err){
               req.flash("error", err.message);
               return res.redirect("back");
             }
            }
-           campground.name = req.body.name;
-           campground.description = req.body.description;
-           campground.cost = req.body.cost;
-           campground.location = location;
-           campground.lat = lat;
-           campground.lng = lng;
-           await campground.save();
+           course.title = req.body.title;
+           course.description = req.body.description;
+           course.studentNo = req.body.studentNo;
+           course.location = location;
+           course.lat = lat;
+           course.lng = lng;
+           await course.save();
             req.flash("success","Successfully Updated!");
-            res.redirect("/campgrounds/" + campground._id);
+            res.redirect("/course/" + course._id);
         }
     });
   });
 });
 
-// DELETE - removes campground and its comments from the database
-router.delete("/:id", isLoggedIn, checkUserCampground, function(req, res) {
+// DELETE - removes course and its comments from the database
+router.delete("/:id", middleware.isLoggedIn, middleware.checkUserCourse, function(req, res) {
     Comment.remove({
       _id: {
-        $in: req.campground.comments
+        $in: req.course.comments
       }
     },async function(err) {
       if(err) {
           req.flash('error', err.message);
           return res.redirect('/');
       } else {
-        await cloudinary.v2.uploader.destroy(req.campground.imageId);
-        // deletes all reviews associated with the campground
-        Review.remove({"_id": {$in: campground.reviews}}, function (err) {
+        await cloudinary.v2.uploader.destroy(req.course.imageId);
+        // deletes all reviews associated with the course
+        Review.remove({"_id": {$in: course.reviews}}, function (err) {
           if (err) {
               console.log(err);
-              return res.redirect("/campgrounds");
+              return res.redirect("/course");
           }
-          req.campground.remove(function(err) {
+          req.course.remove(function(err) {
             if(err) {
                 req.flash('error', err.message);
                 return res.redirect('/');
             }
-            req.flash('error', 'Campground deleted!');
-            res.redirect('/campgrounds');
+            req.flash('error', 'Course deleted!');
+            res.redirect('/course');
           });
       })
     }

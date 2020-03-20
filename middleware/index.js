@@ -1,5 +1,5 @@
 var Comment = require('../models/comment');
-var Campground = require('../models/campground');
+var Course = require('../models/course');
 var Review = require("../models/review");
 
 module.exports = {
@@ -10,18 +10,18 @@ module.exports = {
       req.flash('error', 'You must be signed in to do that!');
       res.redirect('/login');
   },
-  checkUserCampground: function(req, res, next){
-    Campground.findById(req.params.id, function(err, foundCampground){
-      if(err || !foundCampground){
+  checkUserCourse: function(req, res, next){
+    Course.findById(req.params.id, function(err, foundCourse){
+      if(err || !foundCourse){
           console.log(err);
-          req.flash('error', 'Sorry, that campground does not exist!');
-          res.redirect('/campgrounds');
-      } else if(foundCampground.author.id.equals(req.user._id) || req.user.isAdmin){
-          req.campground = foundCampground;
+          req.flash('error', 'Sorry, that course does not exist!');
+          res.redirect('/course');
+      } else if(foundCourse.author.id.equals(req.user._id) || req.user.isAdmin){
+          req.course = foundCourse;
           next();
       } else {
           req.flash('error', 'You don\'t have permission to do that!');
-          res.redirect('/campgrounds/' + req.params.id);
+          res.redirect('/course/' + req.params.id);
       }
     });
   },
@@ -30,13 +30,13 @@ module.exports = {
        if(err || !foundComment){
            console.log(err);
            req.flash('error', 'Sorry, that comment does not exist!');
-           res.redirect('/campgrounds');
+           res.redirect('/course');
        } else if(foundComment.author.id.equals(req.user._id) || req.user.isAdmin){
             req.comment = foundComment;
             next();
        } else {
            req.flash('error', 'You don\'t have permission to do that!');
-           res.redirect('/campgrounds/' + req.params.id);
+           res.redirect('/course/' + req.params.id);
        }
     });
   },
@@ -45,14 +45,6 @@ module.exports = {
       next();
     } else {
       req.flash('error', 'This site is now read only thanks to spam and trolls.');
-      res.redirect('back');
-    }
-  },
-  isSafe: function(req, res, next) {
-    if(req.body.image.match(/^https:\/\/images\.unsplash\.com\/.*/)) {
-      next();
-    }else {
-      req.flash('error', 'Only images from images.unsplash.com allowed.\nSee https://youtu.be/Bn3weNRQRDE for how to copy image urls from unsplash.');
       res.redirect('back');
     }
   },
@@ -78,18 +70,18 @@ module.exports = {
   },
   checkReviewExistence : function (req, res, next) {
     if (req.isAuthenticated()) {
-      Campground.findById(req.params.id).populate("reviews").exec(function (err, foundCampground) {
-        if (err || !foundCampground) {
-          req.flash("error", "Campground not found.");
+      Course.findById(req.params.id).populate("reviews").exec(function (err, foundCourse) {
+        if (err || !foundCourse) {
+          req.flash("error", "Course not found.");
           res.redirect("back");
         } else {
-          // check if req.user._id exists in foundCampground.reviews
-          var foundUserReview = foundCampground.reviews.some(function (review) {
+          // check if req.user._id exists in foundCourse.reviews
+          var foundUserReview = foundCourse.reviews.some(function (review) {
             return review.author.id.equals(req.user._id);
           });
           if (foundUserReview) {
             req.flash("error", "You already wrote a review.");
-            return res.redirect("/campgrounds/" + foundCampground._id);
+            return res.redirect("/course/" + foundCourse._id);
           }
           // if the review was not found, go to the next middleware
           next();

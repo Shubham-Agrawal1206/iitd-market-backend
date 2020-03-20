@@ -28,10 +28,10 @@ var reviewSchema = new mongoose.Schema({
         },
         username: String
     },
-    // campground associated with the review
-    campground: {
+    // course associated with the review
+    course: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Campground"
+        ref: "Course"
     }
 }, {
     // if timestamps are set to true, mongoose assigns createdAt and updatedAt fields to your schema, the type assigned is Date.

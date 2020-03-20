@@ -1,30 +1,29 @@
 const express = require("express");
 const router  = express.Router({mergeParams: true});
-const Campground = require("../models/campground");
+const Course = require("../models/coure");
 const Comment = require("../models/comment");
 const middleware = require("../middleware");
-const { isLoggedIn, checkUserComment, isAdmin } = middleware;
 
 //Comments New
-router.get("/new", isLoggedIn, function(req, res){
+router.get("/new", middleware.isLoggedIn, function(req, res){
     // find campground by id
     console.log(req.params.id);
-    Campground.findById(req.params.id, function(err, campground){
+    Course.findById(req.params.id, function(err, course){
         if(err){
             console.log(err);
         } else {
-             res.render("comments/new", {campground: campground});
+             res.render("comments/new", {course});
         }
     })
 });
 
 //Comments Create
-router.post("/", isLoggedIn, function(req, res){
+router.post("/", middleware.isLoggedIn, function(req, res){
    //lookup campground using ID
-   Campground.findById(req.params.id, function(err, campground){
+   Course.findById(req.params.id, function(err, course){
        if(err){
            console.log(err);
-           res.redirect("/campgrounds");
+           res.redirect("/course");
        } else {
         Comment.create(req.body.comment,async function(err, comment){
            if(err){
@@ -35,35 +34,34 @@ router.post("/", isLoggedIn, function(req, res){
                comment.author.username = req.user.username;
                //save comment
                await comment.save();
-               await campground.comments.push(comment);
-               await campground.save();
-               console.log(comment);
+               await course.comments.push(comment);
+               await course.save();
                req.flash('success', 'Created a comment!');
-               return res.redirect('/campgrounds/' + campground._id);
+               return res.redirect('/course/' + course._id);
            }
         });
        }
    });
 });
 
-router.get("/:commentId/edit", isLoggedIn, checkUserComment, function(req, res){
-  res.render("comments/edit", {campground_id: req.params.id, comment: req.comment});
+router.get("/:commentId/edit", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
+  res.render("comments/edit", {course_id: req.params.id, comment: req.comment});
 });
 
-router.put("/:commentId", isAdmin, function(req, res){
+router.put("/:commentId", middleware.isAdmin, function(req, res){
    Comment.findByIdAndUpdate(req.params.commentId, req.body.comment, function(err, comment){
        if(err){
           console.log(err);
            res.render("edit");
        } else {
-           res.redirect("/campgrounds/" + req.params.id);
+           res.redirect("/course/" + req.params.id);
        }
    }); 
 });
 
-router.delete("/:commentId", isLoggedIn, checkUserComment, function(req, res){
+router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
   // find campground, remove comment from comments array, delete comment in db
-  Campground.findByIdAndUpdate(req.params.id, {
+  Course.findByIdAndUpdate(req.params.id, {
     $pull: {
       comments: req.comment.id
     }
@@ -79,7 +77,7 @@ router.delete("/:commentId", isLoggedIn, checkUserComment, function(req, res){
             return res.redirect('/');
           }
           req.flash('error', 'Comment deleted!');
-          res.redirect("/campgrounds/" + req.params.id);
+          res.redirect("/course/" + req.params.id);
         });
     }
   });

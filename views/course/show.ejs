@@ -50,46 +50,46 @@
   </div>
   <div class="col-md-9">
     <div class="card mb-3">
-      <img class="card-img-top" src="<%= campground.image %>" alt="<%= campground.name %>">
+      <img class="card-img-top" src="<%= course.image %>" alt="<%= course.title %>">
       <div class="card-body">
         <p class="float-right">
-          $<%= campground.cost %>/night
+          Number of Students: <%= course.studentNo %>
         </p>
-        <h5 class="card-title"><%= campground.name %></h5>
+        <h5 class="card-title"><%= course.title %></h5>
         <p>
-          <em>Submitted by: <a href="/users/<%= campground.author.id %>"><%= campground.author.username %></a>, <%= moment(campground.createdAt).fromNow() %></em>
+          <em>Submitted by: <a href="/users/<%= course.author.id %>"><%= course.author.username %></a>, <%= moment(course.createdAt).fromNow() %></em>
         </p>
         <hr>
-        <p class="card-text"><%= campground.description %></p>
-        <% if(currentUser && campground.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
-        <a class="btn btn-warning" href="/campgrounds/<%= campground._id %>/edit">Edit</a>
-        <form action="/campgrounds/<%= campground._id %>?_method=DELETE" method="POST" class="delete-form">
+        <p class="card-text"><%= course.description %></p>
+        <% if(currentUser && course.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+        <a class="btn btn-warning" href="/course/<%= course._id %>/edit">Edit</a>
+        <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
           <button class="btn btn-danger">Delete</button>
         </form>
         <% } %>
       <div style="margin-top: 10px;">
-        <a class="btn btn-default" href="/campgrounds"><i class="fa fa-arrow-left"></i> Go back</a>
+        <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>
       </div>
       </div>
     </div>
     <div class="card">
       <div class="card-body">
-        <% if(campground.rating === 0) { %>
+        <% if(course.rating === 0) { %>
           <h5 class="card-title"><em>No Reviews Yet</em></h5>
         <% } else { %>
           <p>
             <span class="fa fa-star checked"></span>
-            <span class="fa fa-star <% if (campground.rating > 1.5) { %> checked <% } %>"></span>
-            <span class="fa fa-star <% if (campground.rating > 2.5) { %> checked <% } %>"></span>
-            <span class="fa fa-star <% if (campground.rating > 3.5) { %> checked <% } %>"></span>
-            <span class="fa fa-star <% if (campground.rating > 4.5) { %> checked <% } %>"></span>
-            <em>(total reviews: <%= campground.reviews.length %>)</em>
+            <span class="fa fa-star <% if (course.rating > 1.5) { %> checked <% } %>"></span>
+            <span class="fa fa-star <% if (course.rating > 2.5) { %> checked <% } %>"></span>
+            <span class="fa fa-star <% if (course.rating > 3.5) { %> checked <% } %>"></span>
+            <span class="fa fa-star <% if (course.rating > 4.5) { %> checked <% } %>"></span>
+            <em>(total reviews: <%= course.reviews.length %>)</em>
         </p>
-        <h6> Current campground rating: <strong><%= campground.rating.toFixed(2) %></strong></h6>
-        <p><h5 class="card-title">Latest reviews for this campground:</h4></p>
+        <h6> Current course rating: <strong><%= course.rating.toFixed(2) %></strong></h6>
+        <p><h5 class="card-title">Latest reviews for this course:</h4></p>
         <hr style="margin-top: 0;">
         <div class="row">
-          <% campground.reviews.slice(0, 5).forEach(function(review){ %>
+          <% course.reviews.slice(0, 5).forEach(function(review){ %>
             <div class="col-md-12 mb-2">
               <div class="card">
                 <div class="card-body">
@@ -103,8 +103,8 @@
                 </div>
                 <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
                   <div class="float-right col-auto">
-                    <a href="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                    <form class="delete-form" action="/campgrounds/<%=campground._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                    <a href="/course/<%=course._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                    <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                       <button class="btn btn-sm btn-danger">DELETE</button>
                     </form>
                   </div>
@@ -114,11 +114,11 @@
             </div>
           <% }) %>
           <div>
-            <h4 class="card-text my-2 ml-3"><a href="/campgrounds/<%= campground._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
+            <h4 class="card-text my-2 ml-3"><a href="/course/<%= course._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
         </div>
         <% } %>
         <div class="card-text col-auto">
-            <a class="btn btn-primary btn-lg <% if (currentUser && campground.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/campgrounds/<%= campground._id %>/reviews/new">Write a New Review</a>
+            <a class="btn btn-primary btn-lg <% if (currentUser && course.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/course/<%= course._id %>/reviews/new">Write a New Review</a>
         </div>
         </div>
       </div>
@@ -126,11 +126,11 @@
     <div class="card">
       <div class="card-body">
         <div class="text-right">
-          <a class="btn btn-success" href="/campgrounds/<%= campground._id %>/comments/new">Add New Comment</a>
+          <a class="btn btn-success" href="/course/<%= course._id %>/comments/new">Add New Comment</a>
         </div>
         <hr>
         <div class="row">
-        <% campground.comments.forEach(function(comment){ %>
+        <% course.comments.forEach(function(comment){ %>
           <div class="col-md-12 mb-2">
             <div class="card">
               <div class="card-body">
@@ -143,8 +143,8 @@
                   
                   <% if(currentUser && comment.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
                   <div class="float-right">
-                    <a href="/campgrounds/<%=campground._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                    <form class="delete-form" action="/campgrounds/<%=campground._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+                    <a href="/course/<%=course._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                    <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
                       <button class="btn btn-sm btn-danger">DELETE</button>
                     </form>
                   </div>
@@ -162,8 +162,8 @@
 </div>
 <script>
   function initMap() {
-    var lat = Number("<%=campground.lat%>");
-    var lng = Number("<%= campground.lng%>");
+    var lat = Number("<%=course.lat%>");
+    var lng = Number("<%= course.lng%>");
     var center = {lat: lat, lng: lng };
     var map = new google.maps.Map(document.getElementById('map'), {
         zoom: 8,
@@ -171,9 +171,9 @@
         scrollwheel: false
     });
     var contentString = `
-      <strong><%= campground.name %><br />
-      <%= campground.location %></strong>
-      <p><%= campground.description %></p>
+      <strong><%= course.title %><br />
+      <%= course.location %></strong>
+      <p><%= course.description %></p>
     `
     var infowindow = new google.maps.InfoWindow({
       content: contentString

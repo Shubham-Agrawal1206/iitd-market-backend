@@ -2,13 +2,12 @@ var express = require("express");
 var router  = express.Router();
 var passport = require("passport");
 var User = require("../models/user");
-var Campground = require("../models/campground");
+var Course = require("../models/course");
 var pathx = require("path");
 var async = require("async");
 var nodemailer = require("nodemailer");
 var crypto = require("crypto");
 var middleware = require("../middleware");
-var { isLoggedIn, checkUserCampground, checkUserComment, isAdmin, isSafe } = middleware; // destructuring assignment
 
 //root route
 router.get("/", function(req, res){
@@ -27,12 +26,12 @@ router.get("/users/:id",function(req,res){
             req.flash("error","Something went wrong");
             return res.redirect("/");
         }
-        Campground.find().where('author.id').equals(foundUser._id).exec(function(err,foundCamp){
+        Course.find().where('author.id').equals(foundUser._id).exec(function(err,foundCourse){
         if(err){
             req.flash("error","Something went wrong");
             return res.redirect("/");
         }
-        res.render("users/show",{user:foundUser,campgrounds:foundCamp});   
+        res.render("users/show",{user:foundUser,course:foundCourse});   
         })   
     })
 })
@@ -50,7 +49,7 @@ router.post("/register", function(req, res){
         }
         passport.authenticate("local")(req, res, function(){
            req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
-           res.redirect("/campgrounds"); 
+           res.redirect("/course"); 
         });
     });
 });
@@ -63,7 +62,7 @@ router.get("/login", function(req, res){
 //handling login logic
 router.post("/login", passport.authenticate("local", 
     {
-        successRedirect: "/campgrounds",
+        successRedirect: "/course",
         failureRedirect: "/login",
         failureFlash: true,
         successFlash: "Welcome to Goin'Campin'!"
@@ -74,7 +73,7 @@ router.post("/login", passport.authenticate("local",
 router.get("/logout", function(req, res){
    req.logout();
    req.flash("success", "See you later!");
-   res.redirect("/campgrounds");
+   res.redirect("/course");
 });
 
 //forget pasword route
@@ -191,12 +190,12 @@ router.post('/reset/:token', function(req, res) {
         });
       }
     ], function(err) {
-      res.redirect('/campgrounds');
+      res.redirect('/course');
     });
 });
   
 // follow user
-router.get('/follow/:id', isLoggedIn, async function(req, res) {
+router.get('/follow/:id', middleware.isLoggedIn, async function(req, res) {
   try {
     let user = await User.findById(req.params.id);
     await user.followers.push(req.user._id);
@@ -210,7 +209,7 @@ router.get('/follow/:id', isLoggedIn, async function(req, res) {
 });
 
 // view all notifications
-router.get('/notifications', isLoggedIn, async function(req, res) {
+router.get('/notifications', middleware.isLoggedIn, async function(req, res) {
   try {
     let user = await User.findById(req.user._id).populate({
       path: 'notifications',
@@ -225,12 +224,12 @@ router.get('/notifications', isLoggedIn, async function(req, res) {
 });
 
 // handle notification
-router.get('/notifications/:id', isLoggedIn, async function(req, res) {
+router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res) {
   try {
     let notification = await Notification.findById(req.params.id);
     notification.isRead = true;
     await notification.save();
-    res.redirect(`/campgrounds/${notification.campgroundId}`);
+    res.redirect(`/course/${notification.courseId}`);
   } catch(err) {
     req.flash('error', err.message);
     return res.redirect('back');

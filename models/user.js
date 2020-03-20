@@ -7,10 +7,11 @@ var UserSchema = new mongoose.Schema({
     avatar:String,
     firstName:String,
     lastName:String,
-    email:{type:String,required:true},
+    email:{type:String,required:true,unique:true},
     resetPasswordToken:String,
     resetPasswordExpires:Date,
     isAdmin: {type: Boolean, default: false},
+    isProfessor: {type: Boolean, default:false},
     notifications:[
         {
             type:mongoose.Schema.Types.ObjectId,

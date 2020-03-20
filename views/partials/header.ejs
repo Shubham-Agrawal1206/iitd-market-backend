@@ -17,7 +17,7 @@
     </button>
     <div id="navbarCollapse" class="collapse navbar-collapse">
       <ul class="navbar-nav mr-auto">
-        <li class="nav-item <%= typeof page !== 'undefined' && page === 'campgrounds' ? 'active' : '' %>"><a class="nav-link" href="/campgrounds">Home</a></li>
+        <li class="nav-item <%= typeof page !== 'undefined' && page === 'course' ? 'active' : '' %>"><a class="nav-link" href="/course">Home</a></li>
       </ul>
       <ul class="navbar-nav">
         <% if(!currentUser){ %>
@@ -31,7 +31,7 @@
               <div class="dropdown-divider"></div>
               <% notifications.forEach(function(notification) { %>                          
                 <a class="drropdown-item" href="/notifications/<%= notification.id %>">
-                  <%= notification.username %> created a new campground
+                  <%= notification.username %> created a new course
                 </a>
               <% }); %>
             </div>

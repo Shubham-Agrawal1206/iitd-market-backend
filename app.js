@@ -8,16 +8,15 @@ var express     = require("express"),
     cookieParser = require("cookie-parser"),
     LocalStrategy = require("passport-local"),
     flash        = require("connect-flash"),
-    Campground  = require("./models/campground"),
+    Course  = require("./models/course"),
     Comment     = require("./models/comment"),
     User        = require("./models/user"),
     session = require("express-session"),
-    seedDB      = require("./seeds"),
     methodOverride = require("method-override");
 
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
-    campgroundRoutes = require("./routes/campgrounds"),
+    courseRoutes = require("./routes/course"),
     indexRoutes      = require("./routes/index"),
     reviewRoutes     = require("./routes/review");
 
@@ -29,7 +28,7 @@ var commentRoutes    = require("./routes/comments"),
 // assign mongoose promise library and connect to database
 mongoose.Promise = global.Promise;
 
-const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/camp';
+const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/proxy';
 
 mongoose.connect(databaseUri)
       .then(() => console.log(`Database connected`))
@@ -74,9 +73,9 @@ app.use(async function(req, res, next){
 
 
 app.use("/", indexRoutes);
-app.use("/campgrounds", campgroundRoutes);
-app.use("/campgrounds/:id/comments", commentRoutes);
-app.use("/campgrounds/:id/reviews", reviewRoutes);
+app.use("/course", courseRoutes);
+app.use("/course/:id/comments", commentRoutes);
+app.use("/course/:id/reviews", reviewRoutes);
 
 app.listen(3000, function(){
    console.log("The Goin'Campin' Server Has Started!");

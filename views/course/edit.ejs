@@ -1,35 +1,35 @@
 <%- include ("../partials/header") %>
     <div class="row justify-content-center">
         <div class="col-md-12 text-center">
-            <h1>Edit <%= campground.name %></h1>
+            <h1>Edit <%= course.name %></h1>
         </div>
         <div class="col-xs-12 col-md-6 col-lg-4">
-            <form action="/campgrounds/<%=campground._id%>?_method=PUT" method="POST" enctype="multipart/form-data">
+            <form action="/course/<%=course._id%>?_method=PUT" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label for="name">Name</label>
-                    <input class="form-control" type="text" name="name" id="name" value="<%= campground.name %>">
+                    <label for="name">Course Title</label>
+                    <input class="form-control" type="text" name="title" id="name" value="<%= course.title %>">
                 </div>
                 <div class="form-group">
                     <label for="image">Image Url</label>
                     <input class="form-control" type="file" accept="image/*" name="image" id="image">
                 </div>
                 <div class="form-group">
-                    <label for="cost">Cost</label>
-                    <input class="form-control" type="number" name="cost" id="cost" value="<%= campground.cost %>" step="0.01" min="0" required>
+                    <label for="cost">Students Enrolled</label>
+                    <input class="form-control" type="number" name="studentNo" id="cost" value="<%= course.studentNo %>" step="1" min="0" required>
                 </div>
                 <div class="form-group">
                     <label for="location">Location</label>
-                    <input class="form-control" type="text" name="location" id="location" value="<%= campground.location %>">
+                    <input class="form-control" type="text" name="location" id="location" value="<%= course.location %>">
                 </div>
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <input class="form-control" type="text" name="description" id="description" value="<%= campground.description %>">
+                    <input class="form-control" type="text" name="description" id="description" value="<%= course.description %>">
                 </div>
                 <div class="form-group">
                     <button class="btn btn-lg btn-primary btn-block">Update!</button>
                 </div>
             </form>
-            <a href="/campgrounds">Go Back</a>
+            <a href="/course">Go Back</a>
         </div>
     </div>
     <%- include ("../partials/footer") %>
