@@ -2,6 +2,7 @@ var express = require("express");
 var router  = express.Router();
 var Campground = require("../models/campground");
 var Comment = require("../models/comment");
+var Review = require("../models/review");
 var User = require("../models/user");
 var middleware = require("../middleware");
 var NodeGeocoder = require("node-geocoder");
@@ -190,7 +191,10 @@ router.get("/new", isLoggedIn, function(req, res){
 // SHOW - shows more info about one campground
 router.get("/:id", function(req, res){
     //find the campground with provided ID
-    Campground.findById(req.params.id).populate("comments").exec(function(err, foundCampground){
+    Campground.findById(req.params.id).populate("comments").populate({
+      path:"reviews",
+      options:{sort:{createdAt:-1}}
+    }).exec(function(err, foundCampground){
         if(err || !foundCampground){
             console.log(err);
             req.flash('error', 'Sorry, that campground does not exist!');
@@ -268,9 +272,15 @@ router.delete("/:id", isLoggedIn, checkUserCampground, function(req, res) {
     },async function(err) {
       if(err) {
           req.flash('error', err.message);
-          res.redirect('/');
+          return res.redirect('/');
       } else {
         await cloudinary.v2.uploader.destroy(req.campground.imageId);
+        // deletes all reviews associated with the campground
+        Review.remove({"_id": {$in: campground.reviews}}, function (err) {
+          if (err) {
+              console.log(err);
+              return res.redirect("/campgrounds");
+          }
           req.campground.remove(function(err) {
             if(err) {
                 req.flash('error', err.message);
@@ -279,9 +289,10 @@ router.delete("/:id", isLoggedIn, checkUserCampground, function(req, res) {
             req.flash('error', 'Campground deleted!');
             res.redirect('/campgrounds');
           });
-      }
-    })
-});
+      })
+    }
+  })
+})
 
 module.exports = router;
 

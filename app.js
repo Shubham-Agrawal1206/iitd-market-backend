@@ -18,7 +18,8 @@ var express     = require("express"),
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
     campgroundRoutes = require("./routes/campgrounds"),
-    indexRoutes      = require("./routes/index");
+    indexRoutes      = require("./routes/index"),
+    reviewRoutes     = require("./routes/review");
 
     mongoose.set('useNewUrlParser', true);
     mongoose.set('useFindAndModify', false);
@@ -75,6 +76,7 @@ app.use(async function(req, res, next){
 app.use("/", indexRoutes);
 app.use("/campgrounds", campgroundRoutes);
 app.use("/campgrounds/:id/comments", commentRoutes);
+app.use("/campgrounds/:id/reviews", reviewRoutes);
 
 app.listen(3000, function(){
    console.log("The Goin'Campin' Server Has Started!");
