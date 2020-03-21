@@ -2,6 +2,8 @@ var express = require("express");
 var router = express.Router({mergeParams: true});
 var Course = require("../models/course");
 var Review = require("../models/review");
+var User = require("../models/user");
+var Notification = require("../models/notification");
 var middleware = require("../middleware");
 
 // Reviews Index
@@ -55,6 +57,15 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             course.rating = await calculateAverage(course.reviews);
             //save course
             await course.save();
+            let user = User.findById(course.author.id).exec();
+            let newNotification = {
+                username: req.user.username,
+                courseId: course.id,
+                message: "created a new review"
+            }
+            let notification = await Notification.create(newNotification);
+            await user.notifications.push(notification);
+            await user.save();
             req.flash("success", "Your review has been successfully added.");
             res.redirect('/course/' + course._id);
         });
@@ -91,7 +102,7 @@ router.put("/:review_id", middleware.checkReviewOwnership, function (req, res) {
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findById(req.params.id).populate("reviews").exec(function (err, course) {
+        Course.findById(req.params.id).populate("reviews").exec(async function (err, course) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -99,7 +110,16 @@ router.put("/:review_id", middleware.checkReviewOwnership, function (req, res) {
             // recalculate course average
             course.rating = calculateAverage(course.reviews);
             //save changes
-            course.save();
+            await course.save();
+            let user = User.findById(course.author.id).exec();
+            let newNotification = {
+                username: req.user.username,
+                courseId: course.id,
+                message: "updated a review"
+            }
+            let notification = await Notification.create(newNotification);
+            await user.notifications.push(notification);
+            await user.save();
             req.flash("success", "Your review was successfully edited.");
             res.redirect('/course/' + course._id);
         });
@@ -113,7 +133,7 @@ router.delete("/:review_id", middleware.checkReviewOwnership, function (req, res
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(function (err, course) {
+        Course.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, course) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -121,7 +141,16 @@ router.delete("/:review_id", middleware.checkReviewOwnership, function (req, res
             // recalculate course average
             course.rating = calculateAverage(course.reviews);
             //save changes
-            course.save();
+            await course.save();
+            let user = User.findById(course.author.id).exec();
+            let newNotification = {
+                username: req.user.username,
+                courseId: course.id,
+                message: "updated a review"
+            }
+            let notification = await Notification.create(newNotification);
+            await user.notifications.push(notification);
+            await user.save();
             req.flash("success", "Your review was deleted successfully.");
             res.redirect("/course/" + req.params.id);
         });

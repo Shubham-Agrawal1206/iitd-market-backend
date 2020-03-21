@@ -1,6 +1,8 @@
 const express = require("express");
 const router  = express.Router({mergeParams: true});
 const Course = require("../models/course");
+const User = require("../models/user");
+const Notification = require("../models/notification");
 const Comment = require("../models/comment");
 const middleware = require("../middleware");
 
@@ -29,6 +31,15 @@ router.post("/", middleware.isLoggedIn, function(req, res){
            if(err){
                console.log(err);
            } else {
+               let user = User.findById(course.author.id).exec();
+               let newNotification = {
+                username: req.user.username,
+                courseId: course.id,
+                message: "created a new comment"
+              }
+              let notification = await Notification.create(newNotification);
+              await user.notifications.push(notification);
+              await user.save();
                //add username and id to comment
                comment.author.id = req.user._id;
                comment.author.username = req.user.username;
@@ -49,13 +60,24 @@ router.get("/:commentId/edit", middleware.isLoggedIn, middleware.checkUserCommen
 });
 
 router.put("/:commentId", middleware.isAdmin, function(req, res){
-   Comment.findByIdAndUpdate(req.params.commentId, req.body.comment, function(err, comment){
-       if(err){
-          console.log(err);
-           res.render("edit");
-       } else {
-           res.redirect("/course/" + req.params.id);
+   Comment.findByIdAndUpdate(req.params.commentId, req.body.comment,async function(err, comment){
+     try{
+       let course = Course.findById(req.params.id).exec();
+       let user =  User.findById(course.author.id).exec();
+       let newNotification = {
+        username: req.user.username,
+        courseId: course.id,
+        message: "edited a comment"
        }
+       let notification = await Notification.create(newNotification);
+       await user.notifications.push(notification);
+       await user.save();
+       res.redirect("/course/" + req.params.id);
+     }catch(err){
+      console.log(err)
+      req.flash('error', err.message);
+      return res.redirect('/');
+     }
    }); 
 });
 
@@ -65,20 +87,24 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
     $pull: {
       comments: req.comment.id
     }
-  }, function(err) {
-    if(err){ 
-        console.log(err)
-        req.flash('error', err.message);
-        res.redirect('/');
-    } else {
-        req.comment.remove(function(err) {
-          if(err) {
-            req.flash('error', err.message);
-            return res.redirect('/');
-          }
-          req.flash('error', 'Comment deleted!');
-          res.redirect("/course/" + req.params.id);
-        });
+  }, async function(err,course) {
+    try{
+      let user = User.findById(course.author.id).exec();
+      let newNotification = {
+        username: req.user.username,
+        courseId: course.id,
+        message: "deleted a comment"
+       }
+       let notification = await Notification.create(newNotification);
+       await user.notifications.push(notification);
+       await user.save();
+       await req.comment.remove();
+       req.flash('error', 'Comment deleted!');
+       res.redirect("/course/" + req.params.id);
+    }catch(err){
+      console.log(err)
+      req.flash('error', err.message);
+      return res.redirect('/');
     }
   });
 });
