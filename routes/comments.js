@@ -59,7 +59,7 @@ router.get("/:commentId/edit", middleware.isLoggedIn, middleware.checkUserCommen
   res.render("comments/edit", {course_id: req.params.id, comment: req.comment});
 });
 
-router.put("/:commentId", middleware.isAdmin, function(req, res){
+router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
    Comment.findByIdAndUpdate(req.params.commentId, req.body.comment,async function(err, comment){
      try{
        let course = Course.findById(req.params.id).exec();
@@ -108,5 +108,19 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
     }
   });
 });
+
+router.put("/:commentId/report", middleware.isLoggedIn,async function(req,res){
+  try{
+    let comment = Comment.findById(req.params.commentId).exec();
+    comment.isReported = true;
+    await comment.save();
+    req.flash('success', 'Comment reported!');
+    res.redirect("/course/" + req.params.id);
+  }catch(err){
+    console.log(err)
+    req.flash('error', err.message);
+    return res.redirect('/');
+  }
+})
 
 module.exports = router;

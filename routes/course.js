@@ -122,7 +122,7 @@ router.get("/", function(req, res){
 });
 
 //CREATE - add new course to DB
-router.post("/", middleware.isLoggedIn, upload.single('image'), function(req, res){
+router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('image'), function(req, res){
   // get data from form and add to courses array
   console.log(req.file);
   cloudinary.v2.uploader.upload(req.file.path,function(err,result){
@@ -183,7 +183,7 @@ router.post("/", middleware.isLoggedIn, upload.single('image'), function(req, re
 });
 
 //NEW - show form to create new course
-router.get("/new", middleware.isLoggedIn, function(req, res){
+router.get("/new", middleware.isLoggedIn, middleware.isAllowed, function(req, res){
    res.render("course/new"); 
 });
 
@@ -220,13 +220,13 @@ router.get("/:id", function(req, res){
 });
 
 // EDIT - shows edit form for a course
-router.get("/:id/edit", middleware.isLoggedIn, middleware.checkUserCourse, function(req, res){
+router.get("/:id/edit", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res){
   //render edit template with that course
   res.render("course/edit", {course: req.course});
 });
 
 // PUT - updates course in the database
-router.put("/:id",middleware.isLoggedIn, upload.single('image'), function(req, res){
+router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, upload.single('image'), function(req, res){
   geocoder1.geocode(req.body.location, function (err, data) {
     var lat = data[0].latitude;
     var lng = data[0].longitude;
@@ -279,7 +279,7 @@ router.put("/:id",middleware.isLoggedIn, upload.single('image'), function(req, r
 });
 
 // DELETE - removes course and its comments from the database
-router.delete("/:id", middleware.isLoggedIn, middleware.checkUserCourse, function(req, res) {
+router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res) {
     Comment.remove({
       _id: {
         $in: req.course.comments

@@ -8,7 +8,8 @@ var commentSchema = mongoose.Schema({
             ref: "User"
         },
         username: String
-    }
+    },
+    isReported: {type:Boolean,default:false}
 },
 {
     timestamps:true

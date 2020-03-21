@@ -85,7 +85,7 @@ function calculateAverage(reviews) {
 }
 
 // Reviews Edit
-router.get("/:review_id/edit", middleware.checkReviewOwnership, function (req, res) {
+router.get("/:review_id/edit", middleware.isLoggedIn, middleware.checkReviewOwnership, function (req, res) {
     Review.findById(req.params.review_id, function (err, foundReview) {
         if (err) {
             req.flash("error", err.message);
@@ -96,7 +96,7 @@ router.get("/:review_id/edit", middleware.checkReviewOwnership, function (req, r
 });
 
 // Reviews Update
-router.put("/:review_id", middleware.checkReviewOwnership, function (req, res) {
+router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership, function (req, res) {
     Review.findByIdAndUpdate(req.params.review_id, req.body.review, {new: true}, function (err, updatedReview) {
         if (err) {
             req.flash("error", err.message);
@@ -127,7 +127,7 @@ router.put("/:review_id", middleware.checkReviewOwnership, function (req, res) {
 });
 
 // Reviews Delete
-router.delete("/:review_id", middleware.checkReviewOwnership, function (req, res) {
+router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership, function (req, res) {
     Review.findByIdAndRemove(req.params.review_id, function (err) {
         if (err) {
             req.flash("error", err.message);
@@ -156,5 +156,19 @@ router.delete("/:review_id", middleware.checkReviewOwnership, function (req, res
         });
     });
 });
+
+router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
+    try{
+        let review = Review.findById(review_id).exec();
+        review.isReported = true;
+        await review.save();
+        req.flash('success', 'Review reported!');
+        res.redirect("/course/" + req.params.id);
+    }catch(err){
+        console.log(err);
+        req.flash('error', err.message);
+        return res.redirect('/');
+    }
+})
 
 module.exports = router;

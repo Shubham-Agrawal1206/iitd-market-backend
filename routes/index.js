@@ -3,6 +3,8 @@ var router  = express.Router();
 var passport = require("passport");
 var User = require("../models/user");
 var Course = require("../models/course");
+var Comment = require("../models/comment");
+var Review = require("../models/review");
 var pathx = require("path");
 var async = require("async");
 var nodemailer = require("nodemailer");
@@ -60,7 +62,7 @@ router.get("/login", function(req, res){
 });
 
 //handling login logic
-router.post("/login", passport.authenticate("local", 
+router.post("/login",middleware.checkUser, passport.authenticate("local", 
     {
         successRedirect: "/course",
         failureRedirect: "/login",
@@ -235,5 +237,81 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
     return res.redirect('back');
   }
 });
+
+router.get("/report",middleware.isAdmin,async function(req,res){
+  try{
+    let comment = Comment.find({isReported:true}).exec();
+    let review = Review.find({isReported:true}).exec();
+    res.render("report",{comment,review});
+  }catch(err){
+    console.log(err);
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+})
+
+router.put("/users/:id/ban",middleware.isAdmin,async function(req,res){
+  try{
+    let user = User.findById(req.params.id).exec();
+    if(!user.isAdmin){
+      user.isBanned = true;
+    }
+    await user.save();
+    if(!user.isAdmin){
+      let smtpTransport = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+          user: 'emailxx365@gmail.com',
+          pass: process.env.GMAILPW
+        }
+      });
+      let mailOptions = {
+        to: user.email,
+        from: 'emailxx365@gmail.com',
+        subject: 'User Banned',
+        text: 'You are receiving this because you have banned for the rest of the life for your misbehaviour.\n\n' +
+        'For resolving the issue, please email us about it.\n'
+      };
+      await smtpTransport.sendMail(mailOptions);
+    }
+    res.redirect("back");
+  }catch(err){
+    console.log(err);
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+})
+
+router.put("/users/:id/ban/temp",middleware.isAdmin,async function(req,res){
+  try{
+    let user = User.findById(req.params.id).exec();
+    if(!user.isAdmin){
+      user.banExpires = Date.now() + 3600000*24*Number(req.body.day);
+    }
+    await user.save();
+    if(!user.isAdmin){
+      let smtpTransport = nodemailer.createTransport({
+        service: 'Gmail', 
+        auth: {
+          user: 'emailxx365@gmail.com',
+          pass: process.env.GMAILPW
+        }
+      });
+      let mailOptions = {
+        to: user.email,
+        from: 'emailxx365@gmail.com',
+        subject: 'User Banned',
+        text: 'You are receiving this because you have banned for '+ String(req.body.day) +' days for your misbehaviour.\n\n' +
+        'For resolving the issue, please email us about it.\n'
+      };
+      await smtpTransport.sendMail(mailOptions);
+    }
+    res.redirect("back");
+  }catch(err){
+    console.log(err);
+    req.flash('error', err.message);
+    return res.redirect('back');
+  }
+})
 
 module.exports = router;

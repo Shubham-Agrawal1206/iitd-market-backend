@@ -10,6 +10,8 @@ var UserSchema = new mongoose.Schema({
     email:{type:String,required:true,unique:true},
     resetPasswordToken:String,
     resetPasswordExpires:Date,
+    isBanned: {type: Boolean, default: false},
+    banExpires:Date,
     isAdmin: {type: Boolean, default: false},
     isProfessor: {type: Boolean, default:false},
     notifications:[
@@ -23,7 +25,17 @@ var UserSchema = new mongoose.Schema({
             type:mongoose.Schema.Types.ObjectId,
             ref: 'User'
         }
-    ]
+    ],
+    reviews:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Review'
+        }
+    ],
+    rating:{
+        type:Number,
+        default:0
+    }
 });
 
 UserSchema.plugin(passportLocalMongoose)
