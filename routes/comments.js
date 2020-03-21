@@ -27,6 +27,7 @@ router.post("/", middleware.isLoggedIn, function(req, res){
            console.log(err);
            res.redirect("/course");
        } else {
+        req.body.comment.course = course; 
         Comment.create(req.body.comment,async function(err, comment){
            if(err){
                console.log(err);
@@ -120,6 +121,20 @@ router.put("/:commentId/report", middleware.isLoggedIn,async function(req,res){
     console.log(err)
     req.flash('error', err.message);
     return res.redirect('/');
+  }
+})
+
+router.put("/:commentId/resolve",middleware.isAdmin,async function(req,res){
+  try{
+      let comment = Comment.findById(req.params.commentId).exec();
+      comment.isReported = false;
+      await commnet.save();
+      req.flash('success', 'Comment resolved!');
+      res.redirect("/report");
+  }catch(err){
+      console.log(err);
+      req.flash('error', err.message);
+      return res.redirect('/report');
   }
 })
 

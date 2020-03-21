@@ -171,4 +171,18 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
     }
 })
 
+router.put("/:review_id/resolve",middleware.isAdmin,async function(req,res){
+    try{
+        let review = Review.findById(req.params.review_id).exec();
+        review.isReported = false;
+        await review.save();
+        req.flash('success', 'Review resolved!');
+        res.redirect("/report");
+    }catch(err){
+        console.log(err);
+        req.flash('error', err.message);
+        return res.redirect('/report');
+    }
+})
+
 module.exports = router;

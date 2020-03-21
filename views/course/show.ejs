@@ -101,6 +101,13 @@
                       <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                       <div class="card-text"><%= review.text %></div>
                     </div>
+                    <% if(currentUser) { %>
+                      <div class="float-right col-auto">
+                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>/report?_mrthod=PUT" method="post">
+                          <button class="btn btn-sm byn-info">Report</button>
+                        </form>
+                      </div>
+                    <% } %>
                     <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
                       <div class="float-right col-auto">
                         <a href="/course/<%=course._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
@@ -141,6 +148,13 @@
                   </div>
                   <div class="float-right">
                     <p><%= moment(comment.createdAt).fromNow() %></p>
+                    <% if(currentUser) { %>
+                      <div class="float-right col-auto">
+                        <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>/report?_mrthod=PUT" method="post">
+                          <button class="btn btn-sm byn-info">Report</button>
+                        </form>
+                      </div>
+                    <% } %>
                     <% if(currentUser && comment.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
                       <div class="float-right">
                         <a href="/course/<%=course._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>

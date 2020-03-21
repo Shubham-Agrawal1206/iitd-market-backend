@@ -9,7 +9,11 @@ var commentSchema = mongoose.Schema({
         },
         username: String
     },
-    isReported: {type:Boolean,default:false}
+    isReported: {type:Boolean,default:false},
+    course: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Course"
+    }
 },
 {
     timestamps:true

@@ -15,14 +15,24 @@
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi quidem enim excepturi illo libero similique temporibus quibusdam, suscipit iusto nam.
                     <div><a class="stretched-link" href="mailto:<%=user.email%>"><%=user.email%></a></div>
                     <a href="/follow/<%= user.id %>"><button class="btn btn-primary">Follow <%= user.username %></button></a>
+                    <% if(currenUser.isAdmin) { %>
+                    <form action="/users/<%=user.id%>/ban?_method=PUT" method="post">
+                        <button class="btn btn-sm btn-danger">Ban Permanently</button>
+                    </form>
+                    <form action="/users/<%=user.id%>/ban/temp?_method=PUT" method="post">
+                        <input type="number" name="day" min="1" step="1" required>
+                        <button class="btn btn-sm btn-danger">Ban Temporarily</button>
+                    </form>
+                    <% }%>
                   </p>
-                  <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  <p class="card-text"><small class="text-muted">Last updated <%= moment(comment.updatedAt).fromNow() %></small></p>
                 </div>
               </div>
             </div>
-          </div> 
+        </div> 
     </div>
     <div class="col-md-6">
+    <% if(currenUser.isProfessor || currenUser.isAdmin){ %>
         <h3><%=user.username%>'s courses:</h3>
         <div class="row">
             <div class="col-4">
@@ -52,6 +62,7 @@
                 </div>
             </div>
         </div>
+    <% } %>
     </div>
 </div>
 <%- include ("../partials/footer") %>

@@ -240,9 +240,9 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
 
 router.get("/report",middleware.isAdmin,async function(req,res){
   try{
-    let comment = Comment.find({isReported:true}).exec();
-    let review = Review.find({isReported:true}).exec();
-    res.render("report",{comment,review});
+    let comments = Comment.find({isReported:true}).exec();
+    let reviews = Review.find({isReported:true}).exec();
+    res.render("report",{comments,reviews});
   }catch(err){
     console.log(err);
     req.flash('error', err.message);
