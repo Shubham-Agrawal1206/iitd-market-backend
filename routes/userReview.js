@@ -8,35 +8,34 @@ var middleware = require("../middleware");
 
 // Reviews Index
 router.get("/", function (req, res) {
-    Course.findById(req.params.id).populate({
+    User.findById(req.params.id).populate({
         path: "reviews",
         options: {sort: {createdAt: -1}} // sorting the populated reviews array to show the latest first
-    }).exec(function (err, course) {
-        if (err || !course) {
+    }).exec(function (err, user) {
+        if (err || !user) {
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        res.render("reviews/index", {course: course});
+        res.render("userReviews/index", {user: user});
     });
 });
 
 // Reviews New
 router.get("/new", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
     // middleware.checkReviewExistence checks if a user already reviewed the course, only one review per user is allowed
-    Course.findById(req.params.id, function (err, course) {
+    User.findById(req.params.id, function (err, user) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        res.render("reviews/new", {course: course});
-
+        res.render("userReviews/new", {user: user});
     });
 });
 
 // Reviews Create
 router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
     //lookup course using ID
-    Course.findById(req.params.id).populate("reviews").exec(function (err, course) {
+    User.findById(req.params.id).populate("reviews").exec(function (err, user) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
@@ -49,26 +48,26 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             //add author username/id and associated course to the review
             review.author.id = req.user._id;
             review.author.username = req.user.username;
-            review.course = course;
+            review.user = user;
             //save review
             await review.save();
-            await course.reviews.push(review);
+            await user.reviews.push(review);
             // calculate the new average review for the course
-            course.rating = await calculateAverage(course.reviews);
+            user.rating = await calculateAverage(user.reviews);
             //save course
-            await course.save();
-            let user = User.findById(course.author.id).exec();
+            await user.save();
+            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
-                isCourse: true,
+                targetId: userx.id,
+                isCourse: false,
                 message: "created a new review"
             }
             let notification = await Notification.create(newNotification);
-            await user.notifications.push(notification);
-            await user.save();
+            await userx.notifications.push(notification);
+            await userx.save();
             req.flash("success", "Your review has been successfully added.");
-            res.redirect('/course/' + course._id);
+            res.redirect('/users/' + userx._id);
         });
     });
 });
@@ -92,7 +91,7 @@ router.get("/:review_id/edit", middleware.isLoggedIn, middleware.checkReviewOwne
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        res.render("reviews/edit", {course_id: req.params.id, review: foundReview});
+        res.render("userReviews/edit", {user_id: req.params.id, review: foundReview});
     });
 });
 
@@ -103,27 +102,27 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findById(req.params.id).populate("reviews").exec(async function (err, course) {
+        User.findById(req.params.id).populate("reviews").exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
             }
             // recalculate course average
-            course.rating = calculateAverage(course.reviews);
+            user.rating = calculateAverage(user.reviews);
             //save changes
-            await course.save();
-            let user = User.findById(course.author.id).exec();
+            await user.save();
+            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
-                isCourse: true,
+                targetId: userx.id,
+                isCourse: false,
                 message: "updated a review"
             }
             let notification = await Notification.create(newNotification);
-            await user.notifications.push(notification);
-            await user.save();
+            await userx.notifications.push(notification);
+            await userx.save();
             req.flash("success", "Your review was successfully edited.");
-            res.redirect('/course/' + course._id);
+            res.redirect('/users/' + userx._id);
         });
     });
 });
@@ -135,27 +134,26 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, course) {
+        User.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
             }
             // recalculate course average
-            course.rating = calculateAverage(course.reviews);
+            user.rating = calculateAverage(user.reviews);
             //save changes
-            await course.save();
-            let user = User.findById(course.author.id).exec();
+            await user.save();
+            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
-                isCourse: true,
+                courseId: userx.id,
                 message: "updated a review"
             }
             let notification = await Notification.create(newNotification);
-            await user.notifications.push(notification);
-            await user.save();
+            await userx.notifications.push(notification);
+            await userx.save();
             req.flash("success", "Your review was deleted successfully.");
-            res.redirect("/course/" + req.params.id);
+            res.redirect("/users/" + req.params.id);
         });
     });
 });
@@ -166,7 +164,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
         review.isReported = true;
         await review.save();
         req.flash('success', 'Review reported!');
-        res.redirect("/course/" + req.params.id);
+        res.redirect("/users/" + req.params.id);
     }catch(err){
         console.log(err);
         req.flash('error', err.message);

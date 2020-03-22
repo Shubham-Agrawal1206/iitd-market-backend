@@ -23,7 +23,7 @@ router.get("/register", function(req, res){
 
 //User Profile
 router.get("/users/:id",function(req,res){
-    User.findById(req.params.id).populate('followers').exec(function(err,foundUser){
+    User.findById(req.params.id).populate('followers').populate('reviews').exec(function(err,foundUser){
         if(err){
             req.flash("error","Something went wrong");
             return res.redirect("/");
@@ -43,6 +43,9 @@ router.post("/register", function(req, res){
     var newUser = new User({username: req.body.username,avatar: req.body.avatar,firstName:req.body.firstName,lastName:req.body.lastName,email:req.body.email});
     if(req.body.adminCode === process.env.ADMIN_CODE) {
       newUser.isAdmin = true;
+    }
+    if(req.body.profCode === process.env.PROF_CODE){
+      newUser.isProfessor = true;
     }
     User.register(newUser, req.body.password, function(err, user){
         if(err){
@@ -231,7 +234,11 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
     let notification = await Notification.findById(req.params.id);
     notification.isRead = true;
     await notification.save();
-    res.redirect(`/course/${notification.courseId}`);
+    if(notification.isCourse) {
+      res.redirect(`/course/${notification.targetId}`);
+    }else{
+      res.redirect(`/users/${notification.targetId}`);
+    }
   } catch(err) {
     req.flash('error', err.message);
     return res.redirect('back');

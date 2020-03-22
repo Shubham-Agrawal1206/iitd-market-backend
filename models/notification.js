@@ -2,7 +2,8 @@ var mongoose = require("mongoose");
 
 var notificationSchema = new mongoose.Schema({
 	username: String,
-	courseId: String,
+	targetId: String,
+	isCourse: Boolean,
 	message: String,
 	isRead: { type: Boolean, default: false }
 },{

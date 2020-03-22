@@ -35,7 +35,8 @@ router.post("/", middleware.isLoggedIn, function(req, res){
                let user = User.findById(course.author.id).exec();
                let newNotification = {
                 username: req.user.username,
-                courseId: course.id,
+                targetId: course.id,
+                isCourse: true,
                 message: "created a new comment"
               }
               let notification = await Notification.create(newNotification);
@@ -67,7 +68,8 @@ router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, fu
        let user =  User.findById(course.author.id).exec();
        let newNotification = {
         username: req.user.username,
-        courseId: course.id,
+        targetId: course.id,
+        isCourse: true,
         message: "edited a comment"
        }
        let notification = await Notification.create(newNotification);
@@ -93,7 +95,8 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
       let user = User.findById(course.author.id).exec();
       let newNotification = {
         username: req.user.username,
-        courseId: course.id,
+        targetId: course.id,
+        isCourse: true,
         message: "deleted a comment"
        }
        let notification = await Notification.create(newNotification);

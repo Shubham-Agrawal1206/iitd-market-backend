@@ -64,5 +64,64 @@
         </div>
     <% } %>
     </div>
+    <div class="card">
+        <div class="card-body">
+          <% if(user.rating === 0) { %>
+            <h5 class="card-title"><em>No Reviews Yet</em></h5>
+          <% } else { %>
+            <p>
+              <span class="fa fa-star checked"></span>
+              <span class="fa fa-star <% if (user.rating > 1.5) { %> checked <% } %>"></span>
+              <span class="fa fa-star <% if (user.rating > 2.5) { %> checked <% } %>"></span>
+              <span class="fa fa-star <% if (user.rating > 3.5) { %> checked <% } %>"></span>
+              <span class="fa fa-star <% if (user.rating > 4.5) { %> checked <% } %>"></span>
+              <em>(total reviews: <%= user.reviews.length %>)</em>
+            </p>
+            <h6> Current User rating: <strong><%= user.rating.toFixed(2) %></strong></h6>
+            <p><h5 class="card-title">Latest reviews for user:</h4></p>
+            <hr style="margin-top: 0;">
+            <div class="row">
+              <% user.reviews.slice(0, 5).forEach(function(review){ %>
+                <div class="col-md-12 mb-2">
+                  <div class="card">
+                    <div class="card-body">
+                      <div class="float-right">
+                        <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
+                      </div>
+                      <div class="float-left">
+                        <div class="card-title">Review by: <strong><%= review.author.username %></strong></div>
+                        <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
+                        <div class="card-text"><%= review.text %></div>
+                      </div>
+                      <% if(currentUser) { %>
+                        <div class="float-right col-auto">
+                          <form class="delete-form" action="/users/<%=user._id%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
+                            <button class="btn btn-sm btn-info">Report</button>
+                          </form>
+                        </div>
+                      <% } %>
+                      <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                        <div class="float-right col-auto">
+                          <a href="/users/<%=user._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                          <form class="delete-form" action="/users/<%=user._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                            <button class="btn btn-sm btn-danger">DELETE</button>
+                          </form>
+                        </div>
+                      <% } %>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+              <div>
+                <h4 class="card-text my-2 ml-3"><a href="/users/<%= user._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
+              </div>
+            </div>
+          <% } %>
+          <div class="card-text col-auto">
+              <a class="btn btn-primary btn-lg <% if (currentUser && user.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/users/<%= user._id %>/reviews/new">Write a New Review</a>
+          </div>
+          <!-- </div> -->
+        </div>
+      </div>
 </div>
 <%- include ("../partials/footer") %>

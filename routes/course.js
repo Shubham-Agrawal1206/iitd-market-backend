@@ -138,6 +138,10 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
       id: req.user._id,
       username: req.user.username
   }
+  var instructor = {
+    id: req.user._id,
+    username: req.user.username
+  }
   var studentNo = req.body.studentNo;
   geocoder1.geocode(req.body.location,async function (err, data) {
     if (err || data.status === 'ZERO_RESULTS') {
@@ -148,14 +152,17 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    var newCourse = {title: title, image: image, imageId:imageId,description: desc, studentNo: studentNo, author:author, location: location, lat: lat, lng: lng};
+    var newCourse = {title: title, image: image, imageId:imageId, description: desc, studentNo: studentNo, author:author, location: location, lat: lat, lng: lng};
     // Create a new course and save to DB
     try {
       let course = await Course.create(newCourse);
       let user = await User.findById(req.user._id).populate('followers').exec();
+      await course.instructor.push(instructor);
+      await course.save();
       let newNotification = {
         username: req.user.username,
-        courseId: course.id,
+        targetId: course.id,
+        isCourse: true,
         message: "created a new course"
       }
       for(const follower of user.followers) {
@@ -251,7 +258,8 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
            let user = await User.findById(course.author.id).populate('followers').exec();
            let newNotification = {
             username: req.user.username,
-            courseId: course.id,
+            targetId: course.id,
+            isCourse: true,
             message: "updated course: " + req.body.title
           }
           for(const follower of user.followers) {
@@ -296,7 +304,8 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
             let user = await User.findById(req.course.author.id).populate('followers').exec();
             let newNotification = {
               username: req.user.username,
-              courseId: req.course.id,
+              targetId: req.course.id,
+              isCourse: true,
               message: "deleted course: " + req.course.title
             }
             for(const follower of user.followers) {
@@ -316,6 +325,28 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
       })
     }
   })
+})
+
+router.get("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,function(req,res){
+  res.render("course/instr",{cid:req.params.id});
+})
+
+router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,async function(req,res){
+  try {
+    let course = Course.findById(req.params.id).exec();
+    let user = User.findOne({username:req.body.username}).exec();
+    if(!user || !user.isProfessor){
+      req.flash('error', 'No valid user found!');
+      return res.redirect('back');
+    }
+    let instructor = {id:user.id,username:user.username};
+    await course.instructor.push(instructor);
+    await course.save();
+    req.flash('success', 'Instructor Added!');
+    res.redirect('/course/'+ req.params.id);
+  } catch (err) {
+    
+  }
 })
 
 module.exports = router;

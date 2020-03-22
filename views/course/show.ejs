@@ -103,8 +103,8 @@
                     </div>
                     <% if(currentUser) { %>
                       <div class="float-right col-auto">
-                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>/report?_mrthod=PUT" method="post">
-                          <button class="btn btn-sm byn-info">Report</button>
+                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
+                          <button class="btn btn-sm btn-info">Report</button>
                         </form>
                       </div>
                     <% } %>
