@@ -29,7 +29,11 @@
                     <div class="row">
                         <div class="col-md-3">
                             <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
-                            <div>Review by: <strong><%= review.author.username %></strong></div>
+                            <% if(!currentUser.isAdmin && review.isAnonymous) { %>
+                                <div>Review by: <strong>Anonymous</strong></div>
+                            <% } else { %>
+                                <div>Review by: <strong><%= review.author.username %></strong></div>
+                            <% } %>
                             <span><em><%= review.updatedAt.toDateString() %></em></span>
                         </div>
                         <div class="col-md-9">

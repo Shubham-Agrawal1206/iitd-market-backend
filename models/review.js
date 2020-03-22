@@ -38,7 +38,8 @@ var reviewSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
-    isReported:{type:Boolean,default:false}
+    isReported:{type:Boolean,default:false},
+    isAnonymous:{type:Boolean,default:false}
 }, {
     // if timestamps are set to true, mongoose assigns createdAt and updatedAt fields to your schema, the type assigned is Date.
     timestamps: true

@@ -97,7 +97,11 @@
                       <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
                     </div>
                     <div class="float-left">
-                      <div class="card-title">Review by: <strong><%= review.author.username %></strong></div>
+                      <% if(!currentUser.isAdmin && review.isAnonymous) { %>
+                        <div>Review by: <strong>Anonymous</strong></div>
+                      <% } else { %>
+                        <div>Review by: <strong><%= review.author.username %></strong></div>
+                      <% } %>
                       <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                       <div class="card-text"><%= review.text %></div>
                     </div>
