@@ -5,7 +5,7 @@
 <ul>
 	<% allNotifications.forEach(function(notification) { %>
 	<li>
-		<a href="/course/<%= notification.courseId %>">
+		<a href="/notifications/<%= notification.id %>">
 			<%= notification.username %> <%= notification.message%>
 		</a>
 	</li>

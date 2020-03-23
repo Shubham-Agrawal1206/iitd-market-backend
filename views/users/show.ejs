@@ -13,9 +13,9 @@
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis ab nostrum illo quaerat aperiam eaque qui voluptatibus tempora odio sapiente veniam, a ut possimus explicabo ea voluptatem, aut perspiciatis dolorem quisquam iusto amet quasi porro blanditiis harum. Aliquam, aut accusantium.
                     <br>
                     Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi quidem enim excepturi illo libero similique temporibus quibusdam, suscipit iusto nam.
-                    <div><a class="stretched-link" href="mailto:<%=user.email%>"><%=user.email%></a></div>
+                    <div><a href="mailto:<%=user.email%>"><%=user.email%></a></div>
                     <a href="/follow/<%= user.id %>"><button class="btn btn-primary">Follow <%= user.username %></button></a>
-                    <% if(currenUser.isAdmin) { %>
+                    <% if(currentUser && currentUser.isAdmin) { %>
                     <form action="/users/<%=user.id%>/ban?_method=PUT" method="post">
                         <button class="btn btn-sm btn-danger">Ban Permanently</button>
                     </form>
@@ -25,14 +25,14 @@
                     </form>
                     <% }%>
                   </p>
-                  <p class="card-text"><small class="text-muted">Last updated <%= moment(comment.updatedAt).fromNow() %></small></p>
+                  <p class="card-text"><small class="text-muted">Last updated <%= moment(user.updatedAt).fromNow() %></small></p>
                 </div>
               </div>
             </div>
         </div> 
     </div>
     <div class="col-md-6">
-    <% if(currenUser.isProfessor || currenUser.isAdmin){ %>
+    <% if(currentUser && (currentUser.isProfessor || currentUser.isAdmin)){ %>
         <h3><%=user.username%>'s courses:</h3>
         <div class="row">
             <div class="col-4">
@@ -89,7 +89,7 @@
                         <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
                       </div>
                       <div class="float-left">
-                      <% if(!currentUser.isAdmin && review.isAnonymous) { %>
+                      <% if(currentUser && (!currentUser.isAdmin && review.isAnonymous)) { %>
                           <div>Review by: <strong>Anonymous</strong></div>
                       <% } else { %>
                           <div>Review by: <strong><%= review.author.username %></strong></div>

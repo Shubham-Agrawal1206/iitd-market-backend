@@ -3,6 +3,7 @@ var router = express.Router({mergeParams: true});
 var Course = require("../models/course");
 var Review = require("../models/review");
 var User = require("../models/user");
+var Activity = require("../models/activity");
 var Notification = require("../models/notification");
 var middleware = require("../middleware");
 
@@ -57,7 +58,7 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             course.rating = await calculateAverage(course.reviews);
             //save course
             await course.save();
-            let user = User.findById(course.author.id).exec();
+            let user = await User.findById(course.author.id).exec();
             let newNotification = {
                 username: req.user.username,
                 targetId: course.id,
@@ -66,6 +67,8 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             }
             let notification = await Notification.create(newNotification);
             await user.notifications.push(notification);
+            let activity = await Activity.create(newNotification);
+            await user.activity.push(activity);
             await user.save();
             req.flash("success", "Your review has been successfully added.");
             res.redirect('/course/' + course._id);
@@ -112,7 +115,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             course.rating = calculateAverage(course.reviews);
             //save changes
             await course.save();
-            let user = User.findById(course.author.id).exec();
+            let user = await User.findById(course.author.id).exec();
             let newNotification = {
                 username: req.user.username,
                 targetId: course.id,
@@ -122,6 +125,16 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             let notification = await Notification.create(newNotification);
             await user.notifications.push(notification);
             await user.save();
+            let userb = await User.findById(req.user.id).exec();
+            let newActivity = {
+                username: req.user.username,
+                targetId: course.id,
+                isCourse: true,
+                message: "updated a review"
+            }
+            let activity = await Activity.create(newActivity);
+            await userb.activity.push(activity);
+            await userb.save();
             req.flash("success", "Your review was successfully edited.");
             res.redirect('/course/' + course._id);
         });
@@ -144,16 +157,26 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             course.rating = calculateAverage(course.reviews);
             //save changes
             await course.save();
-            let user = User.findById(course.author.id).exec();
+            let user = await User.findById(course.author.id).exec();
             let newNotification = {
                 username: req.user.username,
                 targetId: course.id,
                 isCourse: true,
-                message: "updated a review"
+                message: "deleted a review"
             }
             let notification = await Notification.create(newNotification);
             await user.notifications.push(notification);
             await user.save();
+            let userb = await User.findById(req.user.id).exec();
+            let newActivity = {
+                username: req.user.username,
+                targetId: course.id,
+                isCourse: true,
+                message: "deleted a review"
+            }
+            let activity = await Activity.create(newActivity);
+            await userb.activity.push(activity);
+            await userb.save();
             req.flash("success", "Your review was deleted successfully.");
             res.redirect("/course/" + req.params.id);
         });
@@ -162,9 +185,19 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
 
 router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
     try{
-        let review = Review.findById(review_id).exec();
+        let review = await Review.findById(req.params.review_id).exec();
         review.isReported = true;
         await review.save();
+        let userb = await User.findById(req.user.id).exec();
+        let newActivity = {
+            username: req.user.username,
+            targetId: req.params.id,
+            isCourse: true,
+            message: "reported a review"
+        }
+        let activity = await Activity.create(newActivity);
+        await userb.activity.push(activity);
+        await userb.save();
         req.flash('success', 'Review reported!');
         res.redirect("/course/" + req.params.id);
     }catch(err){
@@ -176,7 +209,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
 
 router.put("/:review_id/resolve",middleware.isAdmin,async function(req,res){
     try{
-        let review = Review.findById(req.params.review_id).exec();
+        let review = await Review.findById(req.params.review_id).exec();
         review.isReported = false;
         await review.save();
         req.flash('success', 'Review resolved!');

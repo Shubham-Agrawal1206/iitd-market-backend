@@ -16,12 +16,21 @@
                                     <div class="card-title">Review by: <strong><%= review.author.username %></strong></div>
                                     <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                                     <div class="card-text"><%= review.text %></div>
+                                    <% if(review.course) { %>
                                     <form class="delete-form" action="/course/<%= review.course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                                         <button class="btn btn-sm btn-danger">Delete And Resolve</button>
                                     </form>
                                     <form class="delete-form" action="/course/<%= review.course._id %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
                                         <button class="btn btn-sm btn-info">Ignore And Resolve</button>
                                     </form>
+                                <% } else { %>
+                                    <form class="delete-form" action="/users/<%= review.user._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                                        <button class="btn btn-sm btn-danger">Delete And Resolve</button>
+                                    </form>
+                                    <form class="delete-form" action="/users/<%= review.user._id %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
+                                        <button class="btn btn-sm btn-info">Ignore And Resolve</button>
+                                    </form>
+                                <% } %>
                                 </div>
                             </div>
                         </div>

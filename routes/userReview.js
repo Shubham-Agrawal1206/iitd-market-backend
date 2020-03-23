@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router({mergeParams: true});
 var Course = require("../models/course");
 var Review = require("../models/review");
+var Activity = require("../models/activity");
 var User = require("../models/user");
 var Notification = require("../models/notification");
 var middleware = require("../middleware");
@@ -21,7 +22,7 @@ router.get("/", function (req, res) {
 });
 
 // Reviews New
-router.get("/new", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
+router.get("/new", middleware.isLoggedIn, middleware.checkUserReviewExistence, function (req, res) {
     // middleware.checkReviewExistence checks if a user already reviewed the course, only one review per user is allowed
     User.findById(req.params.id, function (err, user) {
         if (err) {
@@ -33,19 +34,16 @@ router.get("/new", middleware.isLoggedIn, middleware.checkReviewExistence, funct
 });
 
 // Reviews Create
-router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
+router.post("/", middleware.isLoggedIn, middleware.checkUserReviewExistence, function (req, res) {
     //lookup course using ID
-    User.findById(req.params.id).populate("reviews").exec(function (err, user) {
+    User.findById(req.params.id).populate("reviews").populate('notifications').exec(function (err, user) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
         }
         Review.create(req.body.review,async function (err, review) {
-            if (err) {
-                req.flash("error", err.message);
-                return res.redirect("back");
-            }
-            //add author username/id and associated course to the review
+            try{
+                //add author username/id and associated course to the review
             review.author.id = req.user._id;
             review.author.username = req.user.username;
             review.user = user;
@@ -55,19 +53,25 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             // calculate the new average review for the course
             user.rating = await calculateAverage(user.reviews);
             //save course
-            await user.save();
-            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: userx.id,
+                targetId: user.id,
                 isCourse: false,
                 message: "created a new review"
             }
             let notification = await Notification.create(newNotification);
-            await userx.notifications.push(notification);
-            await userx.save();
+            await user.notifications.push(notification);
+            let activity = await Activity.create(newNotification);
+            await user.activity.push(activity);
+            await user.save();
             req.flash("success", "Your review has been successfully added.");
-            res.redirect('/users/' + userx._id);
+            res.redirect('/users/' + user._id);
+
+            }catch(err){
+                console.log(err);
+                req.flash("error", err.message);
+                return res.redirect("back");
+            }   
         });
     });
 });
@@ -102,7 +106,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        User.findById(req.params.id).populate("reviews").exec(async function (err, user) {
+        User.findById(req.params.id).populate("reviews").populate('notifications').exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -110,19 +114,21 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             // recalculate course average
             user.rating = calculateAverage(user.reviews);
             //save changes
-            await user.save();
-            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: userx.id,
+                targetId: user.id,
                 isCourse: false,
                 message: "updated a review"
             }
             let notification = await Notification.create(newNotification);
-            await userx.notifications.push(notification);
-            await userx.save();
+            await user.notifications.push(notification);
+            await user.save();
+            let userb = await User.findById(req.user.id).exec();
+            let activity = await Activity.create(newNotification);
+            await userb.activity.push(activity);
+            await userb.save();
             req.flash("success", "Your review was successfully edited.");
-            res.redirect('/users/' + userx._id);
+            res.redirect('/users/' + user._id);
         });
     });
 });
@@ -134,7 +140,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        User.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, user) {
+        User.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").populate('notifications').exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -142,16 +148,19 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             // recalculate course average
             user.rating = calculateAverage(user.reviews);
             //save changes
-            await user.save();
-            let userx = User.findById(req.params.id).exec();
             let newNotification = {
                 username: req.user.username,
-                courseId: userx.id,
-                message: "updated a review"
+                targetId: user.id,
+                isCourse: false,
+                message: "deleted a review"
             }
             let notification = await Notification.create(newNotification);
-            await userx.notifications.push(notification);
-            await userx.save();
+            await user.notifications.push(notification);
+            await user.save();
+            let userb = await User.findById(req.user.id).exec();
+            let activity = await Activity.create(newNotification);
+            await userb.activity.push(activity);
+            await userb.save();
             req.flash("success", "Your review was deleted successfully.");
             res.redirect("/users/" + req.params.id);
         });
@@ -160,9 +169,19 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
 
 router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
     try{
-        let review = Review.findById(review_id).exec();
+        let review = await Review.findById(req.params.review_id).exec();
         review.isReported = true;
         await review.save();
+        let userb = await User.findById(req.user.id).exec();
+        let newActivity = {
+            username: req.user.username,
+            targetId: req.params.id,
+            isCourse: false,
+            message: "reported a review"
+        }
+        let activity = await Activity.create(newActivity);
+        await userb.activity.push(activity);
+        await userb.save();
         req.flash('success', 'Review reported!');
         res.redirect("/users/" + req.params.id);
     }catch(err){
@@ -174,7 +193,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
 
 router.put("/:review_id/resolve",middleware.isAdmin,async function(req,res){
     try{
-        let review = Review.findById(req.params.review_id).exec();
+        let review = await Review.findById(req.params.review_id).exec();
         review.isReported = false;
         await review.save();
         req.flash('success', 'Review resolved!');

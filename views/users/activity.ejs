@@ -1,0 +1,15 @@
+<%- include ("../partials/header") %>
+
+<h1>Recent Activity of <%= name %></h1>
+
+<ul>
+	<% activity.forEach(function(activityy) { %>
+	<li>
+		<a href="/users/activity/<%= activityy.id %>">
+			<%= activityy.username %> <%= activityy.message%>
+		</a>
+	</li>
+	<% }); %>
+</ul>
+
+<%- include ("../partials/footer") %>

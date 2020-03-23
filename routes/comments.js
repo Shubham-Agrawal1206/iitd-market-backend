@@ -3,6 +3,7 @@ const router  = express.Router({mergeParams: true});
 const Course = require("../models/course");
 const User = require("../models/user");
 const Notification = require("../models/notification");
+const Activity = require("../models/activity");
 const Comment = require("../models/comment");
 const middleware = require("../middleware");
 
@@ -32,15 +33,23 @@ router.post("/", middleware.isLoggedIn, function(req, res){
            if(err){
                console.log(err);
            } else {
-               let user = User.findById(course.author.id).exec();
+               let user = await User.findById(course.author.id).exec();
                let newNotification = {
                 username: req.user.username,
                 targetId: course.id,
                 isCourse: true,
                 message: "created a new comment"
               }
+              let newActivity = {
+                username: req.user.username,
+                targetId: course.id,
+                isCourse: true,
+                message: "created a new comment"
+              }
+              let activity = await Activity.create(newActivity);
               let notification = await Notification.create(newNotification);
               await user.notifications.push(notification);
+              await user.notifications.push(activity);
               await user.save();
                //add username and id to comment
                comment.author.id = req.user._id;
@@ -64,8 +73,8 @@ router.get("/:commentId/edit", middleware.isLoggedIn, middleware.checkUserCommen
 router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
    Comment.findByIdAndUpdate(req.params.commentId, req.body.comment,async function(err, comment){
      try{
-       let course = Course.findById(req.params.id).exec();
-       let user =  User.findById(course.author.id).exec();
+       let course = await Course.findById(req.params.id).exec();
+       let user = await User.findById(course.author.id).exec();
        let newNotification = {
         username: req.user.username,
         targetId: course.id,
@@ -75,6 +84,16 @@ router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, fu
        let notification = await Notification.create(newNotification);
        await user.notifications.push(notification);
        await user.save();
+       let userb = await User.findById(req.user.id).exec();
+       let newActivity = {
+        username: req.user.username,
+        targetId: course.id,
+        isCourse: true,
+        message: "edited a comment"
+       }
+       let activity = await Activity.create(newActivity);
+       await userb.activity.push(activity);
+       await userb.save();
        res.redirect("/course/" + req.params.id);
      }catch(err){
       console.log(err)
@@ -92,7 +111,7 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
     }
   }, async function(err,course) {
     try{
-      let user = User.findById(course.author.id).exec();
+      let user = await User.findById(course.author.id).exec();
       let newNotification = {
         username: req.user.username,
         targetId: course.id,
@@ -102,6 +121,16 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
        let notification = await Notification.create(newNotification);
        await user.notifications.push(notification);
        await user.save();
+       let userb = await User.findById(req.user.id).exec();
+       let newActivity = {
+        username: req.user.username,
+        targetId: course.id,
+        isCourse: true,
+        message: "deleted a comment"
+       }
+       let activity = await Activity.create(newActivity);
+       await userb.activity.push(activity);
+       await userb.save();
        await req.comment.remove();
        req.flash('error', 'Comment deleted!');
        res.redirect("/course/" + req.params.id);
@@ -115,7 +144,7 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
 
 router.put("/:commentId/report", middleware.isLoggedIn,async function(req,res){
   try{
-    let comment = Comment.findById(req.params.commentId).exec();
+    let comment = await Comment.findById(req.params.commentId).exec();
     comment.isReported = true;
     await comment.save();
     req.flash('success', 'Comment reported!');
@@ -129,7 +158,7 @@ router.put("/:commentId/report", middleware.isLoggedIn,async function(req,res){
 
 router.put("/:commentId/resolve",middleware.isAdmin,async function(req,res){
   try{
-      let comment = Comment.findById(req.params.commentId).exec();
+      let comment = await Comment.findById(req.params.commentId).exec();
       comment.isReported = false;
       await commnet.save();
       req.flash('success', 'Comment resolved!');

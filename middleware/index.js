@@ -7,7 +7,7 @@ module.exports = {
   isLoggedIn:async function(req, res, next){
       if(req.isAuthenticated()){
         if(!req.user.isBanned){
-          let user = User.findOne({_id:req.user.id,banExpires: { $gt: Date.now() }})
+          let user = await User.findOne({_id:req.user.id,banExpires: { $gt: Date.now() }})
           if(!user){
             req.flash('error', 'User has been banned temporarily');
             return res.redirect('back');
@@ -59,7 +59,7 @@ module.exports = {
     });
   },
   isAdmin: function(req, res, next) {
-    if(req.user.isAdmin) {
+    if(req.user && req.user.isAdmin) {
       next();
     } else {
       req.flash('error', 'This site is now read only thanks to spam and trolls.');
@@ -67,7 +67,7 @@ module.exports = {
     }
   },
   isAllowed: function(req,res,next){
-    if(req.user.isProfessor || req.user.isAdmin){
+    if(req.user && (req.user.isProfessor || req.user.isAdmin)){
       next();
     }else{
       req.flash('error', 'This site is now read only thanks to spam and trolls.');
@@ -118,13 +118,37 @@ module.exports = {
     res.redirect("back");
   }
 },
+checkUserReviewExistence : function (req, res, next) {
+  if (req.isAuthenticated()) {
+    User.findById(req.params.id).populate("reviews").exec(function (err, foundUser) {
+      if (err || !foundUser) {
+        req.flash("error", "User not found.");
+        res.redirect("back");
+      } else {
+        // check if req.user._id exists in foundCourse.reviews
+        var foundUserReview = foundUser.reviews.some(function (review) {
+          return review.author.id.equals(req.user._id);
+        });
+        if (foundUserReview) {
+          req.flash("error", "You already wrote a review.");
+          return res.redirect("/users/" + foundUser._id);
+        }
+        // if the review was not found, go to the next middleware
+        next();
+      }
+    });
+} else {
+  req.flash("error", "You need to login first.");
+  res.redirect("back");
+}
+},
   checkUser: async function(req,res,next){
-    let user = User.findOne({username:req.body.username}).exec();
+    let user = await User.findOne({username:req.body.username}).exec();
     if(user.isBanned){
       req.flash('error', 'User has been banned permanently');
       return res.redirect('back');
     }else{
-    let user2 = User.findOne({username:req.body.username, banExpires: { $gt: Date.now() }});
+    let user2 = await User.findOne({username:req.body.username, banExpires: { $gt: Date.now() }});
     if(!user2){
       req.flash('error', 'User has been banned temporarily');
       return res.redirect('back'); 
@@ -132,5 +156,14 @@ module.exports = {
       next();
     }
   }
+  },
+  checkUserAct: async function(req,res,next){
+    let userx = await User.findById(req.user.id).exec();
+    if(userx.id === req.user.id || req.user.isAdmin){
+      next();
+    }else{
+      req.flash('error', 'You are not allowed to see this');
+      return res.redirect('/users'); 
+    }
   }
 }

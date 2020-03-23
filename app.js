@@ -19,7 +19,8 @@ var commentRoutes    = require("./routes/comments"),
     courseRoutes = require("./routes/course"),
     indexRoutes      = require("./routes/index"),
     reviewRoutes     = require("./routes/review"),
-    userReviewRoutes = require("./routes/userReview");
+    userReviewRoutes = require("./routes/userReview"),
+    userRoutes = require("./routes/users");
 
     mongoose.set('useNewUrlParser', true);
     mongoose.set('useFindAndModify', false);
@@ -77,6 +78,7 @@ app.use("/", indexRoutes);
 app.use("/course", courseRoutes);
 app.use("/course/:id/comments", commentRoutes);
 app.use("/course/:id/reviews", reviewRoutes);
+app.use("/users", userRoutes);
 app.use("/users/:id/reviews", userReviewRoutes);
 
 app.listen(3000, function(){

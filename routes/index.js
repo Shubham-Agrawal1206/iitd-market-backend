@@ -5,6 +5,8 @@ var User = require("../models/user");
 var Course = require("../models/course");
 var Comment = require("../models/comment");
 var Review = require("../models/review");
+var Activity = require("../models/activity");
+var Notification = require("../models/notification");
 var pathx = require("path");
 var async = require("async");
 var nodemailer = require("nodemailer");
@@ -21,23 +23,6 @@ router.get("/register", function(req, res){
    res.render("register", {page: 'register'}); 
 });
 
-//User Profile
-router.get("/users/:id",function(req,res){
-    User.findById(req.params.id).populate('followers').populate('reviews').exec(function(err,foundUser){
-        if(err){
-            req.flash("error","Something went wrong");
-            return res.redirect("/");
-        }
-        Course.find().where('author.id').equals(foundUser._id).exec(function(err,foundCourse){
-        if(err){
-            req.flash("error","Something went wrong");
-            return res.redirect("/");
-        }
-        res.render("users/show",{user:foundUser,course:foundCourse});   
-        })   
-    })
-})
-
 //handle sign up logic
 router.post("/register", function(req, res){
     var newUser = new User({username: req.body.username,avatar: req.body.avatar,firstName:req.body.firstName,lastName:req.body.lastName,email:req.body.email});
@@ -47,12 +32,21 @@ router.post("/register", function(req, res){
     if(req.body.profCode === process.env.PROF_CODE){
       newUser.isProfessor = true;
     }
-    User.register(newUser, req.body.password, function(err, user){
+    User.register(newUser, req.body.password,async function(err, user){
         if(err){
             console.log(err);
             return res.render("register", {error: err.message});
         }
-        passport.authenticate("local")(req, res, function(){
+        let newActivity = {
+          username: user.username,
+          targetId: user.id,
+          isCourse: false,
+          message: "registered"
+        }
+        let activity = await Activity.create(newActivity);
+        await user.activity.push(activity);
+        await user.save();
+        await passport.authenticate("local")(req, res, function(){
            req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
            res.redirect("/course"); 
         });
@@ -71,7 +65,17 @@ router.post("/login",middleware.checkUser, passport.authenticate("local",
         failureRedirect: "/login",
         failureFlash: true,
         successFlash: "Welcome to Goin'Campin'!"
-    }), function(req, res){
+    }),async function(req, res){
+      let user = await User.findById(req.user.id).exec();
+      let newActivity = {
+        username: user.username,
+        targetId: user.id,
+        isCourse: false,
+        message: "login"
+      }
+      let activity = await Activity.create(newActivity);
+      await user.activity.push(activity);
+      await user.save();
 });
 
 // logout route
@@ -247,73 +251,10 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
 
 router.get("/report",middleware.isAdmin,async function(req,res){
   try{
-    let comments = Comment.find({isReported:true}).exec();
-    let reviews = Review.find({isReported:true}).exec();
+    const comments = await Comment.find({isReported:true}).exec();
+    const reviews = await Review.find({isReported:true}).exec();
+    console.log(comments,reviews);
     res.render("report",{comments,reviews});
-  }catch(err){
-    console.log(err);
-    req.flash('error', err.message);
-    return res.redirect('back');
-  }
-})
-
-router.put("/users/:id/ban",middleware.isAdmin,async function(req,res){
-  try{
-    let user = User.findById(req.params.id).exec();
-    if(!user.isAdmin){
-      user.isBanned = true;
-    }
-    await user.save();
-    if(!user.isAdmin){
-      let smtpTransport = nodemailer.createTransport({
-        service: 'Gmail', 
-        auth: {
-          user: 'emailxx365@gmail.com',
-          pass: process.env.GMAILPW
-        }
-      });
-      let mailOptions = {
-        to: user.email,
-        from: 'emailxx365@gmail.com',
-        subject: 'User Banned',
-        text: 'You are receiving this because you have banned for the rest of the life for your misbehaviour.\n\n' +
-        'For resolving the issue, please email us about it.\n'
-      };
-      await smtpTransport.sendMail(mailOptions);
-    }
-    res.redirect("back");
-  }catch(err){
-    console.log(err);
-    req.flash('error', err.message);
-    return res.redirect('back');
-  }
-})
-
-router.put("/users/:id/ban/temp",middleware.isAdmin,async function(req,res){
-  try{
-    let user = User.findById(req.params.id).exec();
-    if(!user.isAdmin){
-      user.banExpires = Date.now() + 3600000*24*Number(req.body.day);
-    }
-    await user.save();
-    if(!user.isAdmin){
-      let smtpTransport = nodemailer.createTransport({
-        service: 'Gmail', 
-        auth: {
-          user: 'emailxx365@gmail.com',
-          pass: process.env.GMAILPW
-        }
-      });
-      let mailOptions = {
-        to: user.email,
-        from: 'emailxx365@gmail.com',
-        subject: 'User Banned',
-        text: 'You are receiving this because you have banned for '+ String(req.body.day) +' days for your misbehaviour.\n\n' +
-        'For resolving the issue, please email us about it.\n'
-      };
-      await smtpTransport.sendMail(mailOptions);
-    }
-    res.redirect("back");
   }catch(err){
     console.log(err);
     req.flash('error', err.message);

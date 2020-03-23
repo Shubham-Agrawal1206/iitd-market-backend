@@ -35,7 +35,13 @@ var UserSchema = new mongoose.Schema({
     rating:{
         type:Number,
         default:0
-    }
+    },
+    activity:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Activity'
+        }
+    ]
 },{
     timestamps:true
 });

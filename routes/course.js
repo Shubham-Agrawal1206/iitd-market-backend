@@ -4,6 +4,7 @@ var Course = require("../models/course");
 var Comment = require("../models/comment");
 var Review = require("../models/review");
 var User = require("../models/user");
+var Activity = require("../models/activity");
 var Notification = require("../models/notification");
 var middleware = require("../middleware");
 var NodeGeocoder = require("node-geocoder");
@@ -170,6 +171,16 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
         await follower.notifications.push(notification);
         follower.save();
       }
+      let userb = await User.findById(req.user.id).exec();
+      let newActivity = {
+        username: req.user.username,
+        targetId: course.id,
+        isCourse: true,
+        message: "created a new course"
+      }
+      let activity = await Activity.create(newActivity);
+      await userb.activity.push(activity);
+      await userb.save();
       //redirect back to courses page
       res.redirect(`/course/${course.id}`);
     } catch(err) {
@@ -219,8 +230,23 @@ router.get("/:id", function(req, res){
               return res.render("course/show", {course: foundCourse,weather:[]});
             }
             var mw = mbody.consolidated_weather;
-            //render show template with that course
+            if(req.user){
+              let user = await User.findById(req.user.id).exec();
+              let newActivity = {
+                username: user.username,
+                targetId: foundCourse.id,
+                isCourse: true,
+                message: "visited course " + foundCourse.title
+              }
+              let activity = await Activity.create(newActivity);
+              await user.activity.push(activity);
+              await user.save();
+              //render show template with that course
+              res.render("course/show", {course: foundCourse,weather:mw});
+            } else{
+              //render show template with that course
             res.render("course/show", {course: foundCourse,weather:mw});
+            }
           });
         });
     });
@@ -267,6 +293,16 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
             await follower.notifications.push(notification);
             follower.save();
           }
+          let userb = await User.findById(req.user.id).exec();
+          let newActivity = {
+            username: req.user.username,
+            targetId: course.id,
+            isCourse: true,
+            message: "updated course: " + req.body.title
+          }
+          let activity = await Activity.create(newActivity);
+          await userb.activity.push(activity);
+          await userb.save();
            course.title = req.body.title;
            course.description = req.body.description;
            course.studentNo = req.body.studentNo;
@@ -315,13 +351,23 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
               req.flash('error', 'Course deleted!');
               res.redirect('/course');
             }
+            let userb = await User.findById(req.user.id).exec();
+            let newActivity = {
+              username: req.user.username,
+              targetId: req.course.id,
+              isCourse: true,
+              message: "deleted course: " + req.course.title
+            }
+            let activity = await Activity.create(newActivity);
+            await userb.activity.push(activity);
+            await userb.save();
             await req.course.remove();
+            req.flash('error', 'Course deleted!');
+            res.redirect('/course');
           }catch(err){
             console.log(err);
             return res.redirect("/course");
           }
-            req.flash('error', 'Course deleted!');
-            res.redirect('/course');
       })
     }
   })
@@ -333,8 +379,8 @@ router.get("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.
 
 router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,async function(req,res){
   try {
-    let course = Course.findById(req.params.id).exec();
-    let user = User.findOne({username:req.body.username}).exec();
+    let course = await Course.findById(req.params.id).exec();
+    let user = await User.findOne({username:req.body.username}).exec();
     if(!user || !user.isProfessor){
       req.flash('error', 'No valid user found!');
       return res.redirect('back');
@@ -342,10 +388,21 @@ router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.
     let instructor = {id:user.id,username:user.username};
     await course.instructor.push(instructor);
     await course.save();
+    let userb = await User.findById(req.user.id).exec();
+    let newActivity = {
+      username: req.user.username,
+      targetId: course.id,
+      isCourse: true,
+      message: "added course's instructor: " + req.body.username + " in " + course.title
+    }
+    let activity = await Activity.create(newActivity);
+    await userb.activity.push(activity);
+    await userb.save();
     req.flash('success', 'Instructor Added!');
     res.redirect('/course/'+ req.params.id);
   } catch (err) {
-    
+    console.log(err);
+    return res.redirect("/course");
   }
 })
 
