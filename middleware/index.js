@@ -2,15 +2,15 @@ var Comment = require('../models/comment');
 var Course = require('../models/course');
 var Review = require("../models/review");
 var User = require("../models/user");
+var Activity = require("../models/activity");
 
 module.exports = {
   isLoggedIn:async function(req, res, next){
       if(req.isAuthenticated()){
         if(!req.user.isBanned){
-          let user = await User.findOne({_id:req.user.id,banExpires: { $gt: Date.now() }})
-          if(!user){
+          if(req.user.banExpires && req.user.banExpires> Date.now()){
             req.flash('error', 'User has been banned temporarily');
-            return res.redirect('back');
+            return res.redirect('/course');
           }else{
           return next();
           }
@@ -63,7 +63,7 @@ module.exports = {
       next();
     } else {
       req.flash('error', 'This site is now read only thanks to spam and trolls.');
-      res.redirect('back');
+      res.redirect('/course');
     }
   },
   isAllowed: function(req,res,next){
@@ -147,15 +147,21 @@ checkUserReviewExistence : function (req, res, next) {
     if(user.isBanned){
       req.flash('error', 'User has been banned permanently');
       return res.redirect('back');
-    }else{
-    let user2 = await User.findOne({username:req.body.username, banExpires: { $gt: Date.now() }});
-    if(!user2){
+    }else if(user.banExpires && user.banExpires > Date.now()){
       req.flash('error', 'User has been banned temporarily');
       return res.redirect('back'); 
     }else{
+      let newActivity = {
+        username: user.username,
+        targetId: user.id,
+        isCourse: false,
+        message: "login"
+      }
+      let activity = await Activity.create(newActivity);
+      await user.activity.push(activity);
+      await user.save();
       next();
     }
-  }
   },
   checkUserAct: async function(req,res,next){
     let userx = await User.findById(req.user.id).exec();

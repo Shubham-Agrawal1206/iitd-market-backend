@@ -224,7 +224,7 @@ router.get("/:id", function(req, res){
             return res.render("course/show", {course: foundCourse,weather:[]});
           }
           var wid = body[0].woeid;
-          request("https://www.metaweather.com/api/location/"+wid,{json:true},function(error,resp,mbody){
+          request("https://www.metaweather.com/api/location/"+wid,{json:true},async function(error,resp,mbody){
             if(error){
               req.flash("error","Weather not available");
               return res.render("course/show", {course: foundCourse,weather:[]});

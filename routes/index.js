@@ -46,7 +46,7 @@ router.post("/register", function(req, res){
         let activity = await Activity.create(newActivity);
         await user.activity.push(activity);
         await user.save();
-        await passport.authenticate("local")(req, res, function(){
+        passport.authenticate("local")(req, res, function(){
            req.flash("success", "Successfully Signed Up! Nice to meet you " + req.body.username);
            res.redirect("/course"); 
         });
@@ -59,24 +59,13 @@ router.get("/login", function(req, res){
 });
 
 //handling login logic
-router.post("/login",middleware.checkUser, passport.authenticate("local", 
-    {
-        successRedirect: "/course",
-        failureRedirect: "/login",
-        failureFlash: true,
-        successFlash: "Welcome to Goin'Campin'!"
-    }),async function(req, res){
-      let user = await User.findById(req.user.id).exec();
-      let newActivity = {
-        username: user.username,
-        targetId: user.id,
-        isCourse: false,
-        message: "login"
-      }
-      let activity = await Activity.create(newActivity);
-      await user.activity.push(activity);
-      await user.save();
-});
+router.post("/login",middleware.checkUser,passport.authenticate("local", 
+{
+    successRedirect: "/course",
+    failureRedirect: "/login",
+    failureFlash: true,
+    successFlash: "Welcome to Goin'Campin'!"
+}),function(req, res){});
 
 // logout route
 router.get("/logout", function(req, res){
@@ -259,6 +248,25 @@ router.get("/report",middleware.isAdmin,async function(req,res){
     console.log(err);
     req.flash('error', err.message);
     return res.redirect('back');
+  }
+})
+
+router.get("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,function(req,res){
+  res.render("users/actAdmin");
+})
+
+router.post("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,async function(req,res){
+  try{
+    let user = await User.findOne({username:req.body.username}).exec();
+    if(!user){
+      req.flash('error', 'No user found');
+      return res.redirect('/course');
+    }else{
+      return res.redirect('/users/'+user.id +'/activity');
+    }
+  }catch(err){
+    req.flash('error', err.message);
+    return res.redirect('/course');
   }
 })
 

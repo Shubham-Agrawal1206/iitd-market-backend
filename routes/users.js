@@ -195,23 +195,4 @@ router.get('/activity/:id', middleware.isLoggedIn, async function(req, res) {
   }
 });
 
-router.get("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,function(req,res){
-  res.render("users/actAdmin");
-})
-
-router.post("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,async function(req,res){
-  try{
-    let user = await User.findOne({username:req.body.username}).exec();
-    if(!user){
-      req.flash('error', 'No user found');
-      return res.redirect('back');
-    }else{
-      return res.redirect('/users/'+user.id +'activity');
-    }
-  }catch(err){
-    req.flash('error', err.message);
-    return res.redirect('back');
-  }
-})
-
 module.exports = router;
