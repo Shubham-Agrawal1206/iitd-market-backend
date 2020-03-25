@@ -22,6 +22,23 @@ module.exports = {
       req.flash('error', 'You must be signed in to do that!');
       res.redirect('/login');
   },
+  isLoggedInAjax:async function(req, res, next){
+    if(req.isAuthenticated()){
+      if(!req.user.isBanned){
+        if(req.user.banExpires && req.user.banExpires> Date.now()){
+          req.flash('error', 'User has been banned temporarily');
+          return res.status(500).send('/course');
+        }else{
+        return next();
+        }
+      }else{
+        req.flash('error', 'User has been banned permanently');
+        return res.status(500).send('/course');
+      }
+    }
+    req.flash('error', 'You must be signed in to do that!');
+    res.status(500).send("/login");
+},
   checkUserCourse: function(req, res, next){
     Course.findById(req.params.id).populate('instructor').exec(function(err, foundCourse){
       if(err || !foundCourse){

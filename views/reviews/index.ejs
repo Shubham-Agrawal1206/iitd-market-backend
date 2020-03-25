@@ -29,7 +29,7 @@
                     <div class="row">
                         <div class="col-md-3">
                             <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
-                            <% if(!currentUser.isAdmin && review.isAnonymous) { %>
+                            <% if(!currentUser || (!currentUser.isAdmin && review.isAnonymous)) { %>
                                 <div>Review by: <strong>Anonymous</strong></div>
                             <% } else { %>
                                 <div>Review by: <strong><%= review.author.username %></strong></div>
@@ -40,7 +40,16 @@
                             <p style="text-align: justify; word-wrap: break-word;">
                                 <%= review.text %>
                             </p>
-                            <% if(currentUser && review.author.id.equals(currentUser._id)){ %>
+                            <div>
+                                <form class="vote-up" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                                  <input class="btn btn-sm btn-success" type="submit" value="Vote Up">
+                                </form>
+                                <span class="card-text" id="<%=review._id%>"><%=review.vote.positive.length - review.vote.negative.length%></span>
+                                <form class="vote-down" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                                  <input class="btn btn-sm btn-danger" type="submit" value="Vote Down">
+                                </form>
+                              </div>
+                            <% if(currentUser && (review.author.id.equals(currentUser._id) || currentUser.isAdmin)){ %>
                             <a class="btn btn-xs btn-warning"
                                href="/course/<%=course._id %>/reviews/<%=review._id %>/edit">Edit</a>
                             <form id="delete-form" action="/course/<%=course._id %>/reviews/<%=review._id %>?_method=DELETE" method="POST">
@@ -66,4 +75,17 @@
     <!--Review section-->
 </div>
 
-<%- include("../partials/footer") %>
+</div><!-- /.container -->
+<footer class="footer">
+  <div class="container">
+    <p class="text-muted">&copy; Goin'Campin' 2020 | <a href="/course">Home</a> | <a href="/course/new">New Course</a></p>
+  </div>
+</footer>
+<!--  CDN -->
+<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+<!-- Custom JS for vote feature -->
+<script src="/scripts/vote.js" async defer></script>
+</body>
+</html>

@@ -220,6 +220,7 @@ router.get("/:id", function(req, res){
         request("https://www.metaweather.com/api/location/search/?lattlong="+foundCourse.lat+","+foundCourse.lng,{json:true},function(err,resp,body){
           if(err)
           {
+            console.log(err);
             req.flash("error","Weather not available");
             return res.render("course/show", {course: foundCourse,weather:[]});
           }

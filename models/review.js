@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var voting = require("mongoose-voting");
 
 var reviewSchema = new mongoose.Schema({
     rating: {
@@ -44,5 +45,7 @@ var reviewSchema = new mongoose.Schema({
     // if timestamps are set to true, mongoose assigns createdAt and updatedAt fields to your schema, the type assigned is Date.
     timestamps: true
 });
+
+reviewSchema.plugin(voting);
 
 module.exports = mongoose.model("Review", reviewSchema);    

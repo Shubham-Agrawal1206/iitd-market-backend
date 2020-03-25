@@ -6,7 +6,7 @@ var User = require("../models/user");
 var Activity = require("../models/activity");
 var Notification = require("../models/notification");
 var middleware = require("../middleware");
-
+var voting = require("mongoose-voting");
 // Reviews Index
 router.get("/", function (req, res) {
     Course.findById(req.params.id).populate({
@@ -219,6 +219,59 @@ router.put("/:review_id/resolve",middleware.isAdmin,async function(req,res){
         req.flash('error', err.message);
         return res.redirect('/report');
     }
+})
+
+router.put("/:review_id/upvote",middleware.isLoggedInAjax,async function(req,res){
+    try{
+    let review = await Review.findById(req.params.review_id).exec();
+    if(review.upvoted(req.user.id)){
+        await review.unvote(req.user.id)
+        await review.save();
+        res.status(200).send();
+    }else if(review.downvoted(req.user.id)){
+        await review.unvote(req.user.id)
+        await review.save();
+        await review.upvote(req.user.id)
+        await review.save();
+        res.status(200).send();
+    }else{
+        await review.upvote(req.user.id);
+        await review.save();
+        res.status(200).send(); 
+    }
+}catch(err){
+    console.log(err);
+    res.status(500).send("/");
+}
+})
+
+router.put("/:review_id/downvote",middleware.isLoggedInAjax,async function(req,res){
+    try{
+    let review = await Review.findById(req.params.review_id).exec();
+    if(review.downvoted(req.user.id)){
+        await review.unvote(req.user.id)
+        await review.save()
+        res.status(200).send();
+    }else if(review.upvoted(req.user.id)){
+        await review.unvote(req.user.id)
+        await review.save();
+        await review.downvote(req.user.id);
+        await review.save()
+        res.status(200).send();
+    }else{
+        await review.downvote(req.user.id);
+        await review.save()
+        res.status(200).send(); 
+    }
+}catch(err){
+    console.log(err);
+    res.status(500).send("/");
+}
+})
+
+router.get("/:review_id/votes",async function(req,res){
+    let review = await Review.findById(req.params.review_id).exec();
+    res.status(200).json(review.upvotes() - review.downvotes());
 })
 
 module.exports = router;
