@@ -35,33 +35,12 @@
     <% if(currentUser && (currentUser.isProfessor || currentUser.isAdmin)){ %>
         <h3><%=user.username%>'s courses:</h3>
         <div class="row">
-            <div class="col-4">
-                <div class="list-group" id="list-tab" role="tablist">
-                    <% var lis = 0%>
-                    <% course.forEach(function(course){ %>
-                        <% if(lis===0) {%>
-                            <a class="list-group-item list-group-item-action active" id="list-q<%=lis%>" data-toggle="list" href="#q<%=lis%>" role="tab" aria-controls="xr<%=lis%>"><%= course.title %></a>
-                        <% } else { %>
-                            <a class="list-group-item list-group-item-action" id="list-q<%=lis%>" data-toggle="list" href="#q<%=lis%>" role="tab" aria-controls="xr<%=lis%>"><%= course.title %></a>
-                        <% } %>
-                        <% lis+=1%>
-                    <% }) %>
-                </div>
-            </div>
-            <div class="col-8">
-                <div class="tab-content" id="nav-tabContent">
-                    <%var count = 0%>
-                    <% course.forEach(function(course){ %>
-                        <% if(count===0) {%>
-                            <div class="tab-pane fade show active" id="q<%=count%> " role="tabpanel" aria-labelledby="list-q<%=count%>"><%= course.description %></div>
-                        <% } else { %>
-                            <div class="tab-pane fade" id="q<%=count%> " role="tabpanel" aria-labelledby="list-q<%=count%>"><%= course.description %></div>
-                        <% } %>    
-                        <% count+=1 %> 
-                    <% }) %>
-                </div>
-            </div>
+          <% course.forEach(function(course){%>
+            <ul>
+              <li><a href="/course/<%=course.id%>"><%course.title%></a></li>
+            </ul>
         </div>
+        <a class="btn btn-dark" href="/users/<%=user.id%>/activity">Show Recent Activity</a>
     <% } %>
     </div>
     <div class="card">
