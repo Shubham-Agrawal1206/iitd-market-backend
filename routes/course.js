@@ -243,10 +243,10 @@ router.get("/:id", function(req, res){
               await user.activity.push(activity);
               await user.save();
               //render show template with that course
-              res.render("course/show", {course: foundCourse,weather:mw});
+              res.render("course/show", {course: foundCourse,weather:mw,key:process.env.API_K});
             } else{
               //render show template with that course
-            res.render("course/show", {course: foundCourse,weather:mw});
+            res.render("course/show", {course: foundCourse,weather:mw,key:process.env.API_K});
             }
           });
         });
