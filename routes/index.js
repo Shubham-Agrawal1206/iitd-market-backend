@@ -45,32 +45,55 @@ router.post("/register", function(req, res){
         }
         let activity = await Activity.create(newActivity);
         await user.activity.push(activity);
-        await crypto.randomBytes(20, function(err, buf) {
-          var token = buf.toString('hex');
-        });
-        user.resetPasswordToken = token;
-        await user.save();
-        var smtpTransport = await nodemailer.createTransport({
-          service: 'Gmail', 
-          auth: {
-            user: 'emailxx365@gmail.com',
-            pass: process.env.GMAILPW
+        async.waterfall([
+          function(done) {
+            crypto.randomBytes(20, function(err, buf) {
+              var token = buf.toString('hex');
+              done(err, token);
+            });
+          },
+          function(token, done) {
+            User.findOne({ email: req.body.email }, function(err, user) {
+              if (!user) {
+                req.flash('error', 'No account with that email address exists.');
+                return res.redirect('/forgot');
+              }
+      
+              user.resetPasswordToken = token;
+      
+              user.save(function(err) {
+                done(err, token, user);
+              });
+            });
+          },
+          function(token, user, done) {
+            var smtpTransport = nodemailer.createTransport({
+              service: 'Gmail', 
+              auth: {
+                user: 'emailxx365@gmail.com',
+                pass: process.env.GMAILPW
+              }
+            });
+            var mailOptions = {
+              to: user.email,
+              from: 'emailxx365@gmail.com',
+              subject: 'Node.js User Registration Verification',
+              text: 'You are receiving this because you (or someone else) have requested to make a new account.\n\n' +
+                'Please click on the following link, or paste this into your browser to complete the verification process:\n\n' +
+                'http://' + req.headers.host + '/users/token/' + token + '\n\n' +
+                'If you did not request this, please click this link and your account will be removed.\n\n' +
+                'http://' + req.headers.host + '/users/token/' + token + '/notyours\n\n'
+            };
+            smtpTransport.sendMail(mailOptions, function(err) {
+              console.log('mail sent');
+              req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
+              done(err, 'done');
+            });
           }
+        ], function(err) {
+          if (err) return next(err);
+          res.redirect('/register');
         });
-        var mailOptions = {
-          to: user.email,
-          from: 'emailxx365@gmail.com',
-          subject: 'Node.js User Registration Verification',
-          text: 'You are receiving this because you (or someone else) have requested to make a new account.\n\n' +
-            'Please click on the following link, or paste this into your browser to complete the verification process:\n\n' +
-            'http://' + req.headers.host + '/users/token/' + token + '\n\n' +
-            'If you did not request this, please click this link and your account will be removed.\n\n' +
-            'http://' + req.headers.host + '/users/token/' + token + '/notyours\n\n'
-        };
-        await smtpTransport.sendMail(mailOptions, function(err) {
-          console.log('mail sent');
-          req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-        })
     });
 });
 

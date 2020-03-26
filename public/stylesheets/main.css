@@ -91,3 +91,21 @@ body {
 .checked{
   color:orange;
 }
+
+html,
+body {
+  height: 100%;
+}
+
+#page-content {
+  flex: 1 0 auto;
+}
+
+#sticky-footer {
+  flex-shrink: none;
+}
+
+.py-4{
+  padding-top: 0.2rem !important;
+  padding-bottom: 0.2rem !important;
+}

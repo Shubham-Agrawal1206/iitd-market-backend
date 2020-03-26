@@ -10,9 +10,7 @@
                 <div class="card-body">
                   <h5 class="card-title"><%= user.firstName + " " + user.lastName%></h5>
                   <p class="card-text">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Quis ab nostrum illo quaerat aperiam eaque qui voluptatibus tempora odio sapiente veniam, a ut possimus explicabo ea voluptatem, aut perspiciatis dolorem quisquam iusto amet quasi porro blanditiis harum. Aliquam, aut accusantium.
-                    <br>
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Animi quidem enim excepturi illo libero similique temporibus quibusdam, suscipit iusto nam.
+                    <%= user.description %>
                     <div><a href="mailto:<%=user.email%>"><%=user.email%></a></div>
                     <a href="/follow/<%= user.id %>"><button class="btn btn-primary">Follow <%= user.username %></button></a>
                     <% if(currentUser && currentUser.isAdmin) { %>
@@ -118,7 +116,7 @@
 </div>
 
 </div><!-- /.container -->
-<footer class="footer">
+<footer id="sticky-footer" class="py-4 bg-dark text-white-50">
   <div class="container">
     <p class="text-muted">&copy; Goin'Campin' 2020 | <a href="/course">Home</a> | <a href="/course/new">New Course</a></p>
   </div>

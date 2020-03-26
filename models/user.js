@@ -14,6 +14,7 @@ var UserSchema = new mongoose.Schema({
     banExpires:Date,
     isAdmin: {type: Boolean, default: false},
     isVerified: {type: Boolean, default:false},
+    description:String,
     isProfessor: {type: Boolean, default:false},
     notifications:[
         {
