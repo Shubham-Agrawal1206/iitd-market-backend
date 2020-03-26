@@ -13,6 +13,7 @@ var UserSchema = new mongoose.Schema({
     isBanned: {type: Boolean, default: false},
     banExpires:Date,
     isAdmin: {type: Boolean, default: false},
+    isVerified: {type: Boolean, default:false},
     isProfessor: {type: Boolean, default:false},
     notifications:[
         {

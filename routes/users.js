@@ -195,4 +195,28 @@ router.get('/activity/:id', middleware.isLoggedIn, async function(req, res) {
   }
 });
 
+router.get("/token/:id",async function(req,res){
+  let user = await User.findOne({resetPasswordToken:req.params.id}).exec();
+  if(!user){
+    req.flash('error',"Invalid Token");
+    return res.redirect("/login");
+  }
+  user.isVerified = true;
+  user.resetPasswordToken = undefined;
+  await user.save();
+  req.flash('success','Please login again to complete process!!')
+  res.redirect("/login");
+})
+
+router.get("/token/:id/notyours",async function(req,res){
+  let user = await User.findOne({resetPasswordToken:req.params.id}).exec();
+  if(!user){
+    req.flash('error',"Invalid Token");
+    return res.redirect("/login");
+  }
+  await user.remove();
+  req.flash("success","user removed");
+  res.redirect("/course");
+})
+
 module.exports = router;
