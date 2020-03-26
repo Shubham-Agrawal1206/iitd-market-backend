@@ -1,5 +1,14 @@
 var mongoose = require("mongoose");
 
+var instructorSchema = new mongoose.Schema({
+   uid:{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User",
+      unique:true
+   },
+   username:String
+},{_id:false})
+
 var courseSchema = new mongoose.Schema({
    title: String,
    image: String,
@@ -23,15 +32,7 @@ var courseSchema = new mongoose.Schema({
       },
       username: String
    },
-   instructor: [
-      {
-         id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
-         },
-         username: String
-      }
-   ],
+   instructor: [instructorSchema],
    comments: [
       {
          type: mongoose.Schema.Types.ObjectId,

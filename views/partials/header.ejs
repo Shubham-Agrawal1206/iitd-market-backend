@@ -18,6 +18,7 @@
     <div id="navbarCollapse" class="collapse navbar-collapse">
       <ul class="navbar-nav mr-auto">
         <li class="nav-item <%= typeof page !== 'undefined' && page === 'course' ? 'active' : '' %>"><a class="nav-link" href="/course">Home</a></li>
+        <li class="nav-item <%= typeof page !== 'undefined' && page === 'users' ? 'active' : '' %>"><a class="nav-link" href="/users">Users</a></li>
       </ul>
       <ul class="navbar-nav">
         <% if(!currentUser){ %>

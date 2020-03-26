@@ -40,7 +40,7 @@ module.exports = {
     res.status(500).send("/login");
 },
   checkUserCourse: function(req, res, next){
-    Course.findById(req.params.id).populate('instructor').exec(function(err, foundCourse){
+    Course.findById(req.params.id).exec(function(err, foundCourse){
       if(err || !foundCourse){
           console.log(err);
           req.flash('error', 'Sorry, that course does not exist!');

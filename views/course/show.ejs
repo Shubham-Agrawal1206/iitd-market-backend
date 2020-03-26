@@ -61,8 +61,8 @@
         </p>
         <p>
           <em>Instructor: </em>
-          <% course.instructor.forEach((inst) => { %>
-            <a href="/users/<%= inst.id %>"><%= inst.username %></a>
+          <% course.instructor.forEach(function(inst) { %>
+            ~<a href="/users/<%= inst.uid %>"><%= inst.username %></a>
           <% }) %>
         </p>
         <hr>
@@ -72,7 +72,7 @@
           <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
             <button class="btn btn-danger">Delete</button>
           </form>
-          <a class="btn btn-dark" href="/course/<%=course._id%>/addinst">Add Istructor</a>
+          <a class="btn btn-dark" href="/course/<%=course._id%>/addinst">Add Instructor</a>
         <% } %>
         <div style="margin-top: 10px;">
           <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>

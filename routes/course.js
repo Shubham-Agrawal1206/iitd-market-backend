@@ -140,7 +140,7 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
       username: req.user.username
   }
   var instructor = {
-    id: req.user._id,
+    uid: req.user._id,
     username: req.user.username
   }
   var studentNo = req.body.studentNo;
@@ -208,10 +208,11 @@ router.get("/new", middleware.isLoggedIn, middleware.isAllowed, function(req, re
 // SHOW - shows more info about one course
 router.get("/:id", function(req, res){
     //find the course with provided ID
-    Course.findById(req.params.id).populate("comments").populate("instructor").populate({
+    Course.findById(req.params.id).populate("comments").populate({
       path:"reviews",
       options:{sort:{createdAt:-1}}
     }).exec(function(err, foundCourse){
+      console.log(foundCourse);
         if(err || !foundCourse){
             console.log(err);
             req.flash('error', 'Sorry, that course does not exist!');
@@ -386,9 +387,10 @@ router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.
       req.flash('error', 'No valid user found!');
       return res.redirect('back');
     }
-    let instructor = {id:user.id,username:user.username};
+    let instructor = {uid:user.id,username:user.username};
     await course.instructor.push(instructor);
     await course.save();
+    console.log(course);
     let userb = await User.findById(req.user.id).exec();
     let newActivity = {
       username: req.user.username,
