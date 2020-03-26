@@ -59,6 +59,12 @@
         <p>
           <em>Submitted by: <a href="/users/<%= course.author.id %>"><%= course.author.username %></a>, <%= moment(course.createdAt).fromNow() %></em>
         </p>
+        <p>
+          <em>Instructor: </em>
+          <% course.instructor.forEach((inst) => { %>
+            <a href="/users/<%= inst.id %>"><%= inst.username %></a>
+          <% }) %>
+        </p>
         <hr>
         <p class="card-text"><%= course.description %></p>
         <% if(currentUser && course.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
@@ -66,6 +72,7 @@
           <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
             <button class="btn btn-danger">Delete</button>
           </form>
+          <a class="btn btn-dark" href="/course/<%=course._id%>/addinst">Add Istructor</a>
         <% } %>
         <div style="margin-top: 10px;">
           <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>

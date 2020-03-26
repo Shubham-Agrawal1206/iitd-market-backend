@@ -208,7 +208,7 @@ router.get("/new", middleware.isLoggedIn, middleware.isAllowed, function(req, re
 // SHOW - shows more info about one course
 router.get("/:id", function(req, res){
     //find the course with provided ID
-    Course.findById(req.params.id).populate("comments").populate({
+    Course.findById(req.params.id).populate("comments").populate("instructor").populate({
       path:"reviews",
       options:{sort:{createdAt:-1}}
     }).exec(function(err, foundCourse){
