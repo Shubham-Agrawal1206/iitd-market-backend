@@ -1,4 +1,4 @@
-# Goin'Campin'
+# ReviewCourse
 ## first unzip the folder and setup the mongodb if not set up
 ### Then run mongod in mongodb to start mongodb server
 #### Then run node app.js in root directory to start the server of main application

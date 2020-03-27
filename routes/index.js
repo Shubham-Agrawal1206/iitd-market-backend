@@ -108,7 +108,7 @@ router.post("/login",middleware.checkUser,passport.authenticate("local",
     successRedirect: "/course",
     failureRedirect: "/login",
     failureFlash: true,
-    successFlash: "Welcome to Goin'Campin'!"
+    successFlash: "Welcome to ReviewCourse!"
 }),function(req, res){});
 
 // logout route

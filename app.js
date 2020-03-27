@@ -82,5 +82,5 @@ app.use("/users", userRoutes);
 app.use("/users/:slug/reviews", userReviewRoutes);
 
 app.listen(3000, function(){
-   console.log("The Goin'Campin' Server Has Started!");
+   console.log("The ReviewCourse Server Has Started!");
 });
