@@ -4,7 +4,7 @@
     <div class="row">
         <div class="col-md-12">
             <h1 style="text-align: center">Review Page: <%= course.title %></h1>
-            <a href="/course/<%= course._id %>">Go back to the course page</a>
+            <a href="/course/<%= course.slug %>">Go back to the course page</a>
             <div class="thumbnail">
                 <div class="caption-full">
                     <% if (course.rating === 0) { %>
@@ -41,18 +41,18 @@
                                 <%= review.text %>
                             </p>
                             <div>
-                                <form class="vote-up" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                                <form class="vote-up" data-id="<%=review._id%>" data-courseSlug="<%=course.slug%>">
                                   <input class="btn btn-sm btn-success" type="submit" value="Vote Up">
                                 </form>
                                 <span class="card-text" id="<%=review._id%>"><%=review.vote.positive.length - review.vote.negative.length%></span>
-                                <form class="vote-down" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                                <form class="vote-down" data-id="<%=review._id%>" data-courseSlug="<%=course.slug%>">
                                   <input class="btn btn-sm btn-danger" type="submit" value="Vote Down">
                                 </form>
                               </div>
-                            <% if(currentUser && (review.author.id.equals(currentUser._id) || currentUser.isAdmin)){ %>
+                            <% if(currentUser && (review.author.slug === currentUser.slug || currentUser.isAdmin)){ %>
                             <a class="btn btn-xs btn-warning"
-                               href="/course/<%=course._id %>/reviews/<%=review._id %>/edit">Edit</a>
-                            <form id="delete-form" action="/course/<%=course._id %>/reviews/<%=review._id %>?_method=DELETE" method="POST">
+                               href="/course/<%=course.slug %>/reviews/<%=review._id %>/edit">Edit</a>
+                            <form id="delete-form" action="/course/<%=course.slug %>/reviews/<%=review._id %>?_method=DELETE" method="POST">
                                 <input type="submit" class="btn btn-xs btn-danger" value="Delete">
                             </form>
                             <% } %>
@@ -62,11 +62,11 @@
                     <% }); %>
                     <% } %>
                     <div>
-                        <a class="btn btn-primary <% if (currentUser && course.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/course/<%= course._id %>/reviews/new">
+                        <a class="btn btn-primary <% if (currentUser && course.reviews.some(function (review) {return review.author.slug === currentUser.slug})) { %> disabled <% } %>" href="/course/<%= course.slug %>/reviews/new">
                             Write a New Review</a>
                     </div>
                     <div style="margin-top: 10px;">
-                        <a class="btn btn-default" href="/course/<%= course._id %>"><i class="fa fa-arrow-left"></i> Go back</a>
+                        <a class="btn btn-default" href="/course/<%= course.slug %>"><i class="fa fa-arrow-left"></i> Go back</a>
                     </div>
                 </div>
             </div>

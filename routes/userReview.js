@@ -9,7 +9,7 @@ var middleware = require("../middleware");
 
 // Reviews Index
 router.get("/", function (req, res) {
-    User.findById(req.params.id).populate({
+    User.findOne({slug:req.params.slug}).populate({
         path: "reviews",
         options: {sort: {createdAt: -1}} // sorting the populated reviews array to show the latest first
     }).exec(function (err, user) {
@@ -24,7 +24,7 @@ router.get("/", function (req, res) {
 // Reviews New
 router.get("/new", middleware.isLoggedIn, middleware.checkUserReviewExistence, function (req, res) {
     // middleware.checkReviewExistence checks if a user already reviewed the course, only one review per user is allowed
-    User.findById(req.params.id, function (err, user) {
+    User.findOne({slug:req.params.slug}, function (err, user) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
@@ -36,7 +36,7 @@ router.get("/new", middleware.isLoggedIn, middleware.checkUserReviewExistence, f
 // Reviews Create
 router.post("/", middleware.isLoggedIn, middleware.checkUserReviewExistence, function (req, res) {
     //lookup course using ID
-    User.findById(req.params.id).populate("reviews").populate('notifications').exec(function (err, user) {
+    User.findOne({slug:req.params.slug}).populate("reviews").populate('notifications').exec(function (err, user) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
@@ -44,7 +44,7 @@ router.post("/", middleware.isLoggedIn, middleware.checkUserReviewExistence, fun
         Review.create(req.body.review,async function (err, review) {
             try{
                 //add author username/id and associated course to the review
-            review.author.id = req.user._id;
+            review.author.slug = req.user.slug;
             review.author.username = req.user.username;
             review.user = user;
             //save review
@@ -55,7 +55,7 @@ router.post("/", middleware.isLoggedIn, middleware.checkUserReviewExistence, fun
             //save course
             let newNotification = {
                 username: req.user.username,
-                targetId: user.id,
+                targetSlug: user.slug,
                 isCourse: false,
                 message: "created a new review"
             }
@@ -65,7 +65,7 @@ router.post("/", middleware.isLoggedIn, middleware.checkUserReviewExistence, fun
             await user.activity.push(activity);
             await user.save();
             req.flash("success", "Your review has been successfully added.");
-            res.redirect('/users/' + user._id);
+            res.redirect('/users/' + user.slug);
 
             }catch(err){
                 console.log(err);
@@ -95,7 +95,7 @@ router.get("/:review_id/edit", middleware.isLoggedIn, middleware.checkReviewOwne
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        res.render("userReviews/edit", {user_id: req.params.id, review: foundReview});
+        res.render("userReviews/edit", {user_slug: req.params.slug, review: foundReview});
     });
 });
 
@@ -106,7 +106,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        User.findById(req.params.id).populate("reviews").populate('notifications').exec(async function (err, user) {
+        User.findOne({slug:req.params.slug}).populate("reviews").populate('notifications').exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -116,7 +116,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             //save changes
             let newNotification = {
                 username: req.user.username,
-                targetId: user.id,
+                targetSlug: user.slug,
                 isCourse: false,
                 message: "updated a review"
             }
@@ -128,7 +128,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             await userb.activity.push(activity);
             await userb.save();
             req.flash("success", "Your review was successfully edited.");
-            res.redirect('/users/' + user._id);
+            res.redirect('/users/' + user.slug);
         });
     });
 });
@@ -140,7 +140,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        User.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").populate('notifications').exec(async function (err, user) {
+        User.findOneAndUpdate({slug:req.params.slug}, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").populate('notifications').exec(async function (err, user) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -150,7 +150,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             //save changes
             let newNotification = {
                 username: req.user.username,
-                targetId: user.id,
+                targetSlug: user.slug,
                 isCourse: false,
                 message: "deleted a review"
             }
@@ -162,7 +162,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             await userb.activity.push(activity);
             await userb.save();
             req.flash("success", "Your review was deleted successfully.");
-            res.redirect("/users/" + req.params.id);
+            res.redirect("/users/" + req.params.slug);
         });
     });
 });
@@ -175,7 +175,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
         let userb = await User.findById(req.user.id).exec();
         let newActivity = {
             username: req.user.username,
-            targetId: req.params.id,
+            targetSlug: req.params.slug,
             isCourse: false,
             message: "reported a review"
         }
@@ -183,7 +183,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
         await userb.activity.push(activity);
         await userb.save();
         req.flash('success', 'Review reported!');
-        res.redirect("/users/" + req.params.id);
+        res.redirect("/users/" + req.params.slug);
     }catch(err){
         console.log(err);
         req.flash('error', err.message);

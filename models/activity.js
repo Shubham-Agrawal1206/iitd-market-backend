@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 var activitySchema = new mongoose.Schema({
 	username: String,
-	targetId: String,
+	targetSlug: String,
 	isCourse: Boolean,
 	message: String
 },{

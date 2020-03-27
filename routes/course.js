@@ -136,11 +136,11 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
   var imageId = result.public_id;
   var desc = req.body.description;
   var author = {
-      id: req.user._id,
+      slug: req.user.slug,
       username: req.user.username
   }
   var instructor = {
-    uid: req.user._id,
+    uslug: req.user.slug,
     username: req.user.username
   }
   var studentNo = req.body.studentNo;
@@ -162,7 +162,7 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
       await course.save();
       let newNotification = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "created a new course"
       }
@@ -174,7 +174,7 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
       let userb = await User.findById(req.user.id).exec();
       let newActivity = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "created a new course"
       }
@@ -182,7 +182,7 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
       await userb.activity.push(activity);
       await userb.save();
       //redirect back to courses page
-      res.redirect(`/course/${course.id}`);
+      res.redirect(`/course/${course.slug}`);
     } catch(err) {
       req.flash('error', err.message);
       return res.redirect('back');
@@ -206,9 +206,9 @@ router.get("/new", middleware.isLoggedIn, middleware.isAllowed, function(req, re
 });
 
 // SHOW - shows more info about one course
-router.get("/:id", function(req, res){
+router.get("/:slug", function(req, res){
     //find the course with provided ID
-    Course.findById(req.params.id).populate("comments").populate({
+    Course.findOne({slug:req.params.slug}).populate("comments").populate({
       path:"reviews",
       options:{sort:{createdAt:-1}}
     }).exec(function(err, foundCourse){
@@ -236,7 +236,7 @@ router.get("/:id", function(req, res){
               let user = await User.findById(req.user.id).exec();
               let newActivity = {
                 username: user.username,
-                targetId: foundCourse.id,
+                targetSlug: foundCourse.slug,
                 isCourse: true,
                 message: "visited course " + foundCourse.title
               }
@@ -255,18 +255,18 @@ router.get("/:id", function(req, res){
 });
 
 // EDIT - shows edit form for a course
-router.get("/:id/edit", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res){
+router.get("/:slug/edit", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res){
   //render edit template with that course
   res.render("course/edit", {course: req.course});
 });
 
 // PUT - updates course in the database
-router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, upload.single('image'), function(req, res){
+router.put("/:slug",middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, upload.single('image'), function(req, res){
   geocoder1.geocode(req.body.location, function (err, data) {
     var lat = data[0].latitude;
     var lng = data[0].longitude;
     var location = data[0].formattedAddress;
-    Course.findById(req.params.id).exec(async function(err, course){
+    Course.findOne({slug:req.params.slug}).exec(async function(err, course){
         if(err){
             req.flash("error", err.message);
             res.redirect("back");
@@ -283,10 +283,10 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
               return res.redirect("back");
             }
            }
-           let user = await User.findById(course.author.id).populate('followers').exec();
+           let user = await User.findOne({slug:course.author.slug}).populate('followers').exec();
            let newNotification = {
             username: req.user.username,
-            targetId: course.id,
+            targetSlug: course.slug,
             isCourse: true,
             message: "updated course: " + req.body.title
           }
@@ -298,7 +298,7 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
           let userb = await User.findById(req.user.id).exec();
           let newActivity = {
             username: req.user.username,
-            targetId: course.id,
+            targetSlug: course.slug,
             isCourse: true,
             message: "updated course: " + req.body.title
           }
@@ -313,7 +313,7 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
            course.lng = lng;
            await course.save();
             req.flash("success","Successfully Updated!");
-            res.redirect("/course/" + course._id);
+            res.redirect("/course/" + course.slug);
           } catch(err){
             console.log(err)
             req.flash("error", err.message);
@@ -325,7 +325,7 @@ router.put("/:id",middleware.isLoggedIn, middleware.isAllowed, middleware.checkU
 });
 
 // DELETE - removes course and its comments from the database
-router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res) {
+router.delete("/:slug", middleware.isLoggedIn, middleware.isAllowed, middleware.checkUserCourse, function(req, res) {
     Comment.remove({
       _id: {
         $in: req.course.comments
@@ -339,10 +339,10 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
         // deletes all reviews associated with the course
         Review.remove({"_id": {$in: req.course.reviews}},async function (err) {
           try{
-            let user = await User.findById(req.course.author.id).populate('followers').exec();
+            let user = await User.findOne({slug:req.course.author.slug}).populate('followers').exec();
             let newNotification = {
               username: req.user.username,
-              targetId: req.course.id,
+              targetSlug: req.course.slug,
               isCourse: true,
               message: "deleted course: " + req.course.title
             }
@@ -356,7 +356,7 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
             let userb = await User.findById(req.user.id).exec();
             let newActivity = {
               username: req.user.username,
-              targetId: req.course.id,
+              targetSlug: req.course.slug,
               isCourse: true,
               message: "deleted course: " + req.course.title
             }
@@ -375,26 +375,26 @@ router.delete("/:id", middleware.isLoggedIn, middleware.isAllowed, middleware.ch
   })
 })
 
-router.get("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,function(req,res){
-  res.render("course/instr",{cid:req.params.id});
+router.get("/:slug/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,function(req,res){
+  res.render("course/instr",{cslug:req.params.slug});
 })
 
-router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,async function(req,res){
+router.put("/:slug/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.checkUserCourse,async function(req,res){
   try {
-    let course = await Course.findById(req.params.id).exec();
+    let course = await Course.findOne({slug:req.params.slug}).exec();
     let user = await User.findOne({username:req.body.username}).exec();
     if(!user || !user.isProfessor){
       req.flash('error', 'No valid user found!');
       return res.redirect('back');
     }
-    let instructor = {uid:user.id,username:user.username};
+    let instructor = {uslug:user.slug,username:user.username};
     await course.instructor.push(instructor);
     await course.save();
     console.log(course);
     let userb = await User.findById(req.user.id).exec();
     let newActivity = {
       username: req.user.username,
-      targetId: course.id,
+      targetSlug: course.slug,
       isCourse: true,
       message: "added course's instructor: " + req.body.username + " in " + course.title
     }
@@ -402,7 +402,7 @@ router.put("/:id/addinst",middleware.isLoggedIn,middleware.isAllowed,middleware.
     await userb.activity.push(activity);
     await userb.save();
     req.flash('success', 'Instructor Added!');
-    res.redirect('/course/'+ req.params.id);
+    res.redirect('/course/'+ req.params.slug);
   } catch (err) {
     console.log(err);
     return res.redirect("/course");

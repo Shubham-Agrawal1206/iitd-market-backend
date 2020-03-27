@@ -17,17 +17,17 @@
                                     <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                                     <div class="card-text"><%= review.text %></div>
                                     <% if(review.course) { %>
-                                    <form class="delete-form" action="/course/<%= review.course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                                    <form class="delete-form" action="/course/<%= review.course.slug%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                                         <button class="btn btn-sm btn-danger">Delete And Resolve</button>
                                     </form>
-                                    <form class="delete-form" action="/course/<%= review.course._id %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
+                                    <form class="delete-form" action="/course/<%= review.course.slug %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
                                         <button class="btn btn-sm btn-info">Ignore And Resolve</button>
                                     </form>
                                 <% } else { %>
-                                    <form class="delete-form" action="/users/<%= review.user._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                                    <form class="delete-form" action="/users/<%= review.user.slug%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                                         <button class="btn btn-sm btn-danger">Delete And Resolve</button>
                                     </form>
-                                    <form class="delete-form" action="/users/<%= review.user._id %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
+                                    <form class="delete-form" action="/users/<%= review.user.slug %>/reviews/<%=review._id%>/resolve?_method=PUT" method="POST">
                                         <button class="btn btn-sm btn-info">Ignore And Resolve</button>
                                     </form>
                                 <% } %>
@@ -49,10 +49,10 @@
                             <div class="float-right">
                                 <p><%= moment(comment.createdAt).fromNow() %></p>
                                 <div class="float-right">
-                                    <form class="delete-form" action="/course/<%=comment.course._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+                                    <form class="delete-form" action="/course/<%=comment.course.slug%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
                                         <button class="btn btn-sm btn-danger">Delete And Resolve</button>
                                     </form>
-                                    <form class="delete-form" action="/course/<%=comment.course._id%>/comments/<%=comment._id%>/resolve?_method=PUT" method="POST">
+                                    <form class="delete-form" action="/course/<%=comment.course.slug%>/comments/<%=comment._id%>/resolve?_method=PUT" method="POST">
                                         <button class="btn btn-sm btn-info">Ignore And Resolve</button>
                                     </form>
                                 </div>

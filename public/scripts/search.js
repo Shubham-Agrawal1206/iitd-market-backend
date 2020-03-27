@@ -14,7 +14,7 @@ $('#course-search').on('input', function() {
             <div class="card-body">
               <em>No reviews yet.</em>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@ $('#course-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@ $('#course-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ $('#course-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -82,7 +82,7 @@ $('#course-search').on('input', function() {
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ $('#course-search').on('input', function() {
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <h5 class="card-title">${ course.title }</h5>
-              <a href="/course/${ course._id }" class="btn btn-primary">More Info</a>
+              <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>

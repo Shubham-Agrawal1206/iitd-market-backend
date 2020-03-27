@@ -57,22 +57,22 @@
         </p>
         <h5 class="card-title"><%= course.title %></h5>
         <p>
-          <em>Submitted by: <a href="/users/<%= course.author.id %>"><%= course.author.username %></a>, <%= moment(course.createdAt).fromNow() %></em>
+          <em>Submitted by: <a href="/users/<%= course.author.slug %>"><%= course.author.username %></a>, <%= moment(course.createdAt).fromNow() %></em>
         </p>
         <p>
           <em>Instructor: </em>
           <% course.instructor.forEach(function(inst) { %>
-            ~<a href="/users/<%= inst.uid %>"><%= inst.username %></a>
+            <a href="/users/<%= inst.uslug %>">~<%= inst.username %></a>
           <% }) %>
         </p>
         <hr>
         <p class="card-text"><%= course.description %></p>
-        <% if(currentUser && course.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
-          <a class="btn btn-warning" href="/course/<%= course._id %>/edit">Edit</a>
-          <form action="/course/<%= course._id %>?_method=DELETE" method="POST" class="delete-form">
+        <% if(currentUser && course.author.slug === currentUser.slug || currentUser && currentUser.isAdmin){ %>
+          <a class="btn btn-warning" href="/course/<%= course.slug %>/edit">Edit</a>
+          <form action="/course/<%= course.slug %>?_method=DELETE" method="POST" class="delete-form">
             <button class="btn btn-danger">Delete</button>
           </form>
-          <a class="btn btn-dark" href="/course/<%=course._id%>/addinst">Add Instructor</a>
+          <a class="btn btn-dark" href="/course/<%=course.slug%>/addinst">Add Instructor</a>
         <% } %>
         <div style="margin-top: 10px;">
           <a class="btn btn-default" href="/course"><i class="fa fa-arrow-left"></i> Go back</a>
@@ -112,26 +112,26 @@
                       <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                       <div class="card-text"><%= review.text %></div>
                       <div>
-                        <form class="vote-up" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                        <form class="vote-up" data-id="<%=review._id%>" data-courseSlug="<%=course.slug%>">
                           <input class="btn btn-sm btn-success" type="submit" value="Vote Up">
                         </form>
                         <span class="card-text" id="<%=review._id%>"><%=review.vote.positive.length - review.vote.negative.length%></span>
-                        <form class="vote-down" data-id="<%=review._id%>" data-courseId="<%=course._id%>">
+                        <form class="vote-down" data-id="<%=review._id%>" data-courseSlug="<%=course.slug%>">
                           <input class="btn btn-sm btn-danger" type="submit" value="Vote Down">
                         </form>
                       </div>
                     </div>
                     <% if(currentUser) { %>
                       <div class="float-right col-auto">
-                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
+                        <form class="delete-form" action="/course/<%=course.slug%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
                           <button class="btn btn-sm btn-info">Report</button>
                         </form>
                       </div>
                     <% } %>
-                    <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                    <% if(currentUser && review.author.slug === currentUser.slug || currentUser && currentUser.isAdmin){ %>
                       <div class="float-right col-auto">
-                        <a href="/course/<%=course._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                        <form class="delete-form" action="/course/<%=course._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                        <a href="/course/<%=course.slug%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                        <form class="delete-form" action="/course/<%=course.slug%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                           <button class="btn btn-sm btn-danger">DELETE</button>
                         </form>
                       </div>
@@ -141,12 +141,12 @@
               </div>
             <% }) %>
             <div>
-              <h4 class="card-text my-2 ml-3"><a href="/course/<%= course._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
+              <h4 class="card-text my-2 ml-3"><a href="/course/<%= course.slug %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
             </div>
           </div>
         <% } %>
         <div class="card-text col-auto">
-            <a class="btn btn-primary btn-lg <% if (currentUser && course.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/course/<%= course._id %>/reviews/new">Write a New Review</a>
+            <a class="btn btn-primary btn-lg <% if (currentUser && course.reviews.some(function (review) {return review.author.slug === currentUser.slug})) { %> disabled <% } %>" href="/course/<%= course.slug %>/reviews/new">Write a New Review</a>
         </div>
         <!-- </div> -->
       </div>
@@ -154,7 +154,7 @@
     <div class="card">
       <div class="card-body">
         <div class="text-right">
-          <a class="btn btn-success" href="/course/<%= course._id %>/comments/new">Add New Comment</a>
+          <a class="btn btn-success" href="/course/<%= course.slug %>/comments/new">Add New Comment</a>
         </div>
         <hr>
         <div class="row">
@@ -170,15 +170,15 @@
                     <p><%= moment(comment.createdAt).fromNow() %></p>
                     <% if(currentUser) { %>
                       <div class="float-right col-auto">
-                        <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>/report?_mrthod=PUT" method="post">
-                          <button class="btn btn-sm byn-info">Report</button>
+                        <form class="delete-form" action="/course/<%=course.slug%>/comments/<%=comment._id%>/report?_method=PUT" method="post">
+                          <button class="btn btn-sm btn-info">Report</button>
                         </form>
                       </div>
                     <% } %>
-                    <% if(currentUser && comment.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                    <% if(currentUser && comment.author.slug === currentUser.slug || currentUser && currentUser.isAdmin){ %>
                       <div class="float-right">
-                        <a href="/course/<%=course._id%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                        <form class="delete-form" action="/course/<%=course._id%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
+                        <a href="/course/<%=course.slug%>/comments/<%=comment._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                        <form class="delete-form" action="/course/<%=course.slug%>/comments/<%=comment._id%>?_method=DELETE" method="POST">
                           <button class="btn btn-sm btn-danger">DELETE</button>
                         </form>
                       </div>

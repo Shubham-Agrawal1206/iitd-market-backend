@@ -30,7 +30,7 @@
                             <span class="fa fa-star <% if (user.rating > 3.5) { %> checked <% } %>"></span>
                             <span class="fa fa-star <% if (user.rating > 4.5) { %> checked <% } %>"></span>
                         <% } %>
-                       <a href="/users/<%= user._id %>" class="btn btn-primary">More Info</a>
+                       <a href="/users/<%= user.slug %>" class="btn btn-primary">More Info</a>
                    </div>
                 </div>
             </div>

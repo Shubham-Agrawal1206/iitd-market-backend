@@ -12,12 +12,12 @@
                   <p class="card-text">
                     <%= user.description %>
                     <div><a href="mailto:<%=user.email%>"><%=user.email%></a></div>
-                    <a href="/follow/<%= user.id %>"><button class="btn btn-primary">Follow <%= user.username %></button></a>
+                    <a href="/follow/<%= user.slug %>"><button class="btn btn-primary">Follow <%= user.username %></button></a>
                     <% if(currentUser && currentUser.isAdmin) { %>
-                    <form action="/users/<%=user.id%>/ban?_method=PUT" method="post">
+                    <form action="/users/<%= user.slug %>/ban?_method=PUT" method="post">
                         <button class="btn btn-sm btn-danger">Ban Permanently</button>
                     </form>
-                    <form action="/users/<%=user.id%>/ban/temp?_method=PUT" method="post">
+                    <form action="/users/<%= user.slug %>/ban/temp?_method=PUT" method="post">
                         <input type="number" name="day" min="1" step="1" required>
                         <button class="btn btn-sm btn-danger">Ban Temporarily</button>
                     </form>
@@ -33,13 +33,14 @@
     <% if(currentUser && (currentUser.isProfessor || currentUser.isAdmin)){ %>
         <h3><%=user.username%>'s courses:</h3>
         <div class="row">
-          <% course.forEach(function(course){%>
+          <% course.forEach(function(courseq){%>
             <ul>
-              <li><a href="/course/<%=course.id%>"><%course.title%></a></li>
+              <li><a href="/course/<%=courseq.slug%>"><%=courseq.title%></a></li>
             </ul>
         </div>
-        <a class="btn btn-dark" href="/users/<%=user.id%>/activity">Show Recent Activity</a>
-    <% } %>
+    <% }) %>
+    <a class="btn btn-dark" href="/users/<%=user.slug%>/activity">Show Recent Activity</a>
+      <% } %>
     </div>
     <div class="card">
         <div class="card-body">
@@ -66,34 +67,34 @@
                         <%- '<span class="fa fa-star checked"></span>'.repeat(review.rating) %><%- '<span class="fa fa-star"></span>'.repeat(5 - review.rating) %>
                       </div>
                       <div class="float-left">
-                      <% if(currentUser && (!currentUser.isAdmin && review.isAnonymous)) { %>
+                      <% if(!currentUser || (!currentUser.isAdmin && review.isAnonymous)) { %>
                           <div>Review by: <strong>Anonymous</strong></div>
                       <% } else { %>
                           <div>Review by: <strong><%= review.author.username %></strong></div>
                       <% } %>
                         <div class="card-subtitle mb-2"><em><%= review.updatedAt.toDateString() %></em></div>
                         <div class="card-text"><%= review.text %></div>
-                        <div>
-                          <form class="vote-up" data-id="<%=review._id%>" data-userId="<%=user._id%>">
-                            <input class="btn btn-sm btn-success" type="button" value="Vote Up">
+                        <div class="float-left"> 
+                          <form class="vote-up" data-id="<%=review._id%>" data-userSlug="<%=user.slug%>">
+                            <input class="btn btn-sm btn-success" type="submit" value="Vote Up">
                           </form>
                           <span class="card-text" id="<%=review._id%>"><%=review.vote.positive.length - review.vote.negative.length%></span>
-                          <form class="vote-down" data-id="<%=review._id%>" data-userId="<%=user.id%>">
-                            <input class="btn btn-sm btn-danger" type="button" value="Vote Down">
+                          <form class="vote-down" data-id="<%=review._id%>" data-userSlug="<%=user.slug%>">
+                            <input class="btn btn-sm btn-danger" type="submit" value="Vote Down">
                           </form>
                         </div>
                       </div>
                       <% if(currentUser) { %>
                         <div class="float-right col-auto">
-                          <form class="delete-form" action="/users/<%=user._id%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
+                          <form class="delete-form" action="/users/<%=user.slug%>/reviews/<%=review._id%>/report?_method=PUT" method="post">
                             <button class="btn btn-sm btn-info">Report</button>
                           </form>
                         </div>
                       <% } %>
-                      <% if(currentUser && review.author.id.equals(currentUser._id) || currentUser && currentUser.isAdmin){ %>
+                      <% if(currentUser && review.author.slug === currentUser.slug || currentUser && currentUser.isAdmin){ %>
                         <div class="float-right col-auto">
-                          <a href="/users/<%=user._id%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
-                          <form class="delete-form" action="/users/<%=user._id%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
+                          <a href="/users/<%=user.slug%>/reviews/<%=review._id%>/edit" class="btn btn-sm btn-warning">EDIT</a>
+                          <form class="delete-form" action="/users/<%=user.slug%>/reviews/<%=review._id%>?_method=DELETE" method="POST">
                             <button class="btn btn-sm btn-danger">DELETE</button>
                           </form>
                         </div>
@@ -103,12 +104,12 @@
                 </div>
               <% }) %>
               <div>
-                <h4 class="card-text my-2 ml-3"><a href="/users/<%= user._id %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
+                <h4 class="card-text my-2 ml-3"><a href="/users/<%= user.slug %>/reviews"><i class="fa fa-search" aria-hidden="true"></i> See all reviews</a></h4>
               </div>
             </div>
           <% } %>
           <div class="card-text col-auto">
-              <a class="btn btn-primary btn-lg <% if (currentUser && user.reviews.some(function (review) {return review.author.id.equals(currentUser._id)})) { %> disabled <% } %>" href="/users/<%= user._id %>/reviews/new">Write a New Review</a>
+              <a class="btn btn-primary btn-lg <% if (currentUser && user.reviews.some(function (review) {return review.author.slug === currentUser.slug})) { %> disabled <% } %>" href="/users/<%= user.slug %>/reviews/new">Write a New Review</a>
           </div>
           <!-- </div> -->
         </div>

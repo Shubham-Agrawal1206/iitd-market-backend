@@ -14,7 +14,7 @@ $('#user-search').on('input', function() {
             <div class="card-body">
               <em>No reviews yet.</em>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -31,7 +31,7 @@ $('#user-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@ $('#user-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -65,7 +65,7 @@ $('#user-search').on('input', function() {
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -82,7 +82,7 @@ $('#user-search').on('input', function() {
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star"></span>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>
@@ -99,7 +99,7 @@ $('#user-search').on('input', function() {
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <h5 class="card-title">${ user.username }</h5>
-              <a href="/users/${ user._id }" class="btn btn-primary">More Info</a>
+              <a href="/users/${ user.slug }" class="btn btn-primary">More Info</a>
             </div>
           </div>
         </div>

@@ -76,10 +76,10 @@ app.use(async function(req, res, next){
 
 app.use("/", indexRoutes);
 app.use("/course", courseRoutes);
-app.use("/course/:id/comments", commentRoutes);
-app.use("/course/:id/reviews", reviewRoutes);
+app.use("/course/:slug/comments", commentRoutes);
+app.use("/course/:slug/reviews", reviewRoutes);
 app.use("/users", userRoutes);
-app.use("/users/:id/reviews", userReviewRoutes);
+app.use("/users/:slug/reviews", userReviewRoutes);
 
 app.listen(3000, function(){
    console.log("The Goin'Campin' Server Has Started!");

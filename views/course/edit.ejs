@@ -4,7 +4,7 @@
             <h1>Edit <%= course.name %></h1>
         </div>
         <div class="col-xs-12 col-md-6 col-lg-4">
-            <form action="/course/<%=course._id%>?_method=PUT" method="POST" enctype="multipart/form-data">
+            <form action="/course/<%=course.slug%>?_method=PUT" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
                     <label for="name">Course Title</label>
                     <input class="form-control" type="text" name="title" id="name" value="<%= course.title %>">

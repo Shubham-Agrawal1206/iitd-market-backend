@@ -3,14 +3,14 @@ $(document).ready(function(){
         e.preventDefault();
 
         var reviewId = $(this).data("id");
-        var courseId = $(this).data("courseid");
+        var courseSlug = $(this).data("courseslug");
         $.ajax({
             type: "PUT",
-            url: "http://localhost:3000/course/" + courseId + "/reviews/" + reviewId + "/upvote",
+            url: window.location.origin + "/course/" + courseSlug + "/reviews/" + reviewId + "/upvote",
             success: function(data){
                 $.ajax({
                     type: "GET",
-                    url: "http://localhost:3000/course/" + courseId + "/reviews/" + reviewId + "/votes",
+                    url: window.location.origin + "/course/" + courseSlug + "/reviews/" + reviewId + "/votes",
                     success: function(data){
                         $(`#${reviewId}`).html('')
                         $(`#${reviewId}`).append(data)
@@ -29,14 +29,14 @@ $(document).ready(function(){
         e.preventDefault();
 
         var reviewId = $(this).data("id");
-        var courseId = $(this).data("courseid");
+        var courseSlug = $(this).data("courseslug");
         $.ajax({
             type: "PUT",
-            url: "http://localhost:3000/course/"+ courseId + "/reviews/" + reviewId + "/downvote",
+            url: window.location.origin + "/course/"+ courseSlug + "/reviews/" + reviewId + "/downvote",
             success: (data) => {
                 $.ajax({
                     type: "GET",
-                    url: "http://localhost:3000/course/" + courseId + "/reviews/" + reviewId + "/votes",
+                    url: window.location.origin + "/course/" + courseSlug + "/reviews/" + reviewId + "/votes",
                     success: function(data){
                         $(`#${reviewId}`).html('');
                         $(`#${reviewId}`).append(data)

@@ -25,7 +25,7 @@ router.get("/register", function(req, res){
 
 //handle sign up logic
 router.post("/register", function(req, res){
-    var newUser = new User({username: req.body.username,avatar: req.body.avatar,firstName:req.body.firstName,lastName:req.body.lastName,email:req.body.email});
+    var newUser = new User({username: req.body.username,avatar: req.body.avatar,description:req.body.description,firstName:req.body.firstName,lastName:req.body.lastName,email:req.body.email});
     if(req.body.adminCode === process.env.ADMIN_CODE) {
       newUser.isAdmin = true;
     }
@@ -39,7 +39,7 @@ router.post("/register", function(req, res){
         }
         let newActivity = {
           username: user.username,
-          targetId: user.id,
+          targetSlug: user.slug,
           isCourse: false,
           message: "registered"
         }
@@ -237,13 +237,13 @@ router.post('/reset/:token', function(req, res) {
 });
   
 // follow user
-router.get('/follow/:id', middleware.isLoggedIn, async function(req, res) {
+router.get('/follow/:slug', middleware.isLoggedIn, async function(req, res) {
   try {
-    let user = await User.findById(req.params.id);
+    let user = await User.findOne({slug:req.params.slug}).exec();
     await user.followers.push(req.user._id);
     await user.save();
     req.flash('success', 'Successfully followed ' + user.username + '!');
-    res.redirect('/users/' + req.params.id);
+    res.redirect('/users/' + req.params.slug);
   } catch(err) {
     req.flash('error', err.message);
     return res.redirect('back');
@@ -272,9 +272,9 @@ router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res)
     notification.isRead = true;
     await notification.save();
     if(notification.isCourse) {
-      res.redirect(`/course/${notification.targetId}`);
+      res.redirect(`/course/${notification.targetSlug}`);
     }else{
-      res.redirect(`/users/${notification.targetId}`);
+      res.redirect(`/users/${notification.targetSlug}`);
     }
   } catch(err) {
     req.flash('error', err.message);
@@ -306,7 +306,7 @@ router.post("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,async fun
       req.flash('error', 'No user found');
       return res.redirect('/course');
     }else{
-      return res.redirect('/users/'+user.id +'/activity');
+      return res.redirect('/users/'+user.slug +'/activity');
     }
   }catch(err){
     req.flash('error', err.message);

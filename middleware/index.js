@@ -40,23 +40,23 @@ module.exports = {
     res.status(500).send("/login");
 },
   checkUserCourse: function(req, res, next){
-    Course.findById(req.params.id).exec(function(err, foundCourse){
+    Course.findOne({slug:req.params.slug}).exec(function(err, foundCourse){
       if(err || !foundCourse){
           console.log(err);
           req.flash('error', 'Sorry, that course does not exist!');
           res.redirect('/course');
-      } else if(foundCourse.author.id.equals(req.user._id) || req.user.isAdmin){
+      } else if(foundCourse.author.slug === req.user.slug || req.user.isAdmin){
           req.course = foundCourse;
           next();
       } else {
         for(const instruct of foundCourse.instructor){
-          if(instruct.uid.equals(req.user._id)){
+          if(instruct.uslug === req.user.slug){
            req.course = foundCourse;
            return next();
           }
         }
           req.flash('error', 'You don\'t have permission to do that!');
-          res.redirect('/course/' + req.params.id);
+          res.redirect('/course/' + req.params.slug);
       }
     });
   },
@@ -66,12 +66,12 @@ module.exports = {
            console.log(err);
            req.flash('error', 'Sorry, that comment does not exist!');
            res.redirect('/course');
-       } else if(foundComment.author.id.equals(req.user._id) || req.user.isAdmin){
+       } else if(foundComment.author.slug === req.user.slug || req.user.isAdmin){
             req.comment = foundComment;
             next();
        } else {
            req.flash('error', 'You don\'t have permission to do that!');
-           res.redirect('/course/' + req.params.id);
+           res.redirect('/course/' + req.params.slug);
        }
     });
   },
@@ -98,7 +98,7 @@ module.exports = {
           res.redirect("back");
         }  else {
           // does user own the comment?
-          if(foundReview.author.id.equals(req.user._id) || req.user.isAdmin) {
+          if(foundReview.author.slug === req.user.slug || req.user.isAdmin) {
           next();
           } else {
             req.flash("error", "You don't have permission to do that");
@@ -113,18 +113,20 @@ module.exports = {
   },
   checkReviewExistence : function (req, res, next) {
     if (req.isAuthenticated()) {
-      Course.findById(req.params.id).populate("reviews").exec(function (err, foundCourse) {
+      console.log("re");
+      Course.findOne({slug:req.params.slug}).populate("reviews").exec(function (err, foundCourse) {
         if (err || !foundCourse) {
           req.flash("error", "Course not found.");
           res.redirect("back");
         } else {
           // check if req.user._id exists in foundCourse.reviews
           var foundUserReview = foundCourse.reviews.some(function (review) {
-            return review.author.id.equals(req.user._id);
+            console.log(review);
+            return review.author.slug === req.user.slug;
           });
           if (foundUserReview) {
             req.flash("error", "You already wrote a review.");
-            return res.redirect("/course/" + foundCourse._id);
+            return res.redirect("/course/" + foundCourse.slug);
           }
           // if the review was not found, go to the next middleware
           next();
@@ -137,18 +139,19 @@ module.exports = {
 },
 checkUserReviewExistence : function (req, res, next) {
   if (req.isAuthenticated()) {
-    User.findById(req.params.id).populate("reviews").exec(function (err, foundUser) {
+    console.log(req.user);
+    User.findOne({slug:req.params.slug}).populate("reviews").exec(function (err, foundUser) {
       if (err || !foundUser) {
         req.flash("error", "User not found.");
         res.redirect("back");
       } else {
         // check if req.user._id exists in foundCourse.reviews
         var foundUserReview = foundUser.reviews.some(function (review) {
-          return review.author.id.equals(req.user._id);
+          return review.author.slug === req.user.slug;
         });
         if (foundUserReview) {
           req.flash("error", "You already wrote a review.");
-          return res.redirect("/users/" + foundUser._id);
+          return res.redirect("/users/" + foundUser.slug);
         }
         // if the review was not found, go to the next middleware
         next();
@@ -170,7 +173,7 @@ checkUserReviewExistence : function (req, res, next) {
     }else{
       let newActivity = {
         username: user.username,
-        targetId: user.id,
+        targetSlug: user.slug,
         isCourse: false,
         message: "login"
       }

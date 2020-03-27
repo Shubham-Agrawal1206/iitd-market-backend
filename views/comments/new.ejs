@@ -4,7 +4,7 @@
             <h1>Add New Comment to <%= course.title %></h1>
         </div>
         <div class="col-xs-12 col-md-6 col-lg-4">
-            <form action="/course/<%= course._id %>/comments" method="POST">
+            <form action="/course/<%= course.slug %>/comments" method="POST">
                 <div class="form-group">
                     <input class="form-control" type="text" name="comment[text]" placeholder="text">
                 </div>

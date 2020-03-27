@@ -14,13 +14,13 @@ var crypto = require("crypto");
 var middleware = require("../middleware");
 
 //User Profile
-router.get("/:id",function(req,res){
-    User.findById(req.params.id).populate('followers').populate('reviews').exec(function(err,foundUser){
+router.get("/:slug",function(req,res){
+    User.findOne({slug:req.params.slug}).populate('followers').populate('reviews').exec(function(err,foundUser){
         if(err){
             req.flash("error","Something went wrong");
             return res.redirect("/");
         }
-        Course.find().where('author.id').equals(foundUser._id).exec(async function(err,foundCourse){
+        Course.find().where('author.slug').equals(foundUser.slug).exec(async function(err,foundCourse){
         if(err){
             req.flash("error","Something went wrong");
             return res.redirect("/");
@@ -29,7 +29,7 @@ router.get("/:id",function(req,res){
         let userb = await User.findById(req.user.id).exec();
         let newActivity = {
             username: req.user.username,
-            targetId: req.params.id,
+            targetSlug: req.params.slug,
             isCourse: false,
             message: "visited user: " + foundUser.username
         }
@@ -44,9 +44,9 @@ router.get("/:id",function(req,res){
     })
 })
 
-router.put("/:id/ban",middleware.isAdmin,async function(req,res){
+router.put("/:slug/ban",middleware.isAdmin,async function(req,res){
     try{
-      let user = await User.findById(req.params.id).exec();
+      let user = await User.findOne({slug:req.params.slug}).exec();
       if(!user.isAdmin){
         user.isBanned = true;
       }
@@ -76,9 +76,9 @@ router.put("/:id/ban",middleware.isAdmin,async function(req,res){
     }
   })
   
-  router.put("/:id/ban/temp",middleware.isAdmin,async function(req,res){
+  router.put("/:slug/ban/temp",middleware.isAdmin,async function(req,res){
     try{
-      let user = await User.findById(req.params.id).exec();
+      let user = await User.findOne({slug:req.params.slug}).exec();
       if(!user.isAdmin){
         user.banExpires = Date.now() + 3600000*24*Number(req.body.day);
       }
@@ -167,16 +167,16 @@ router.get("/",function(req,res){
     }
 })
 
-router.get("/:id/activity",middleware.isLoggedIn, middleware.checkUserAct,async function(req,res){
+router.get("/:slug/activity",middleware.isLoggedIn, middleware.checkUserAct,async function(req,res){
   try{
-    let user = await User.findById(req.params.id).populate('activity').exec();
+    let user = await User.findOne({slug:req.params.slug}).populate('activity').exec();
     let activity = await user.activity.reverse();
     let name = user.username;
     res.render("users/activity",{activity,name});
   }catch(err){
     console.log(err);
     req.flash('error',err.message);
-    return res.redirect('/users' + req.params.id);
+    return res.redirect('/users' + req.params.slug);
   }
 })
 
@@ -185,9 +185,9 @@ router.get('/activity/:id', middleware.isLoggedIn, async function(req, res) {
   try {
     let activity = await Activity.findById(req.params.id);
     if(activity.isCourse) {
-      res.redirect(`/course/${activity.targetId}`);
+      res.redirect(`/course/${activity.targetSlug}`);
     }else{
-      res.redirect(`/users/${activity.targetId}`);
+      res.redirect(`/users/${activity.targetSlug}`);
     }
   } catch(err) {
     req.flash('error', err.message);

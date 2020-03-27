@@ -9,7 +9,7 @@ var middleware = require("../middleware");
 var voting = require("mongoose-voting");
 // Reviews Index
 router.get("/", function (req, res) {
-    Course.findById(req.params.id).populate({
+    Course.findOne({slug:req.params.slug}).populate({
         path: "reviews",
         options: {sort: {createdAt: -1}} // sorting the populated reviews array to show the latest first
     }).exec(function (err, course) {
@@ -24,7 +24,7 @@ router.get("/", function (req, res) {
 // Reviews New
 router.get("/new", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
     // middleware.checkReviewExistence checks if a user already reviewed the course, only one review per user is allowed
-    Course.findById(req.params.id, function (err, course) {
+    Course.findOne({slug:req.params.slug}, function (err, course) {
         if (err) {
             req.flash("error", err.message);
             return res.redirect("back");
@@ -37,18 +37,21 @@ router.get("/new", middleware.isLoggedIn, middleware.checkReviewExistence, funct
 // Reviews Create
 router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, function (req, res) {
     //lookup course using ID
-    Course.findById(req.params.id).populate("reviews").exec(function (err, course) {
+    Course.findOne({slug:req.params.slug}).populate("reviews").exec(function (err, course) {
         if (err) {
+            console.log(err,"1");
             req.flash("error", err.message);
             return res.redirect("back");
         }
         Review.create(req.body.review,async function (err, review) {
             if (err) {
+                console.log(err,"2")
                 req.flash("error", err.message);
                 return res.redirect("back");
             }
             //add author username/id and associated course to the review
-            review.author.id = req.user._id;
+            console.log(req.user);
+            review.author.slug = req.user.slug;
             review.author.username = req.user.username;
             review.course = course;
             //save review
@@ -58,10 +61,10 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             course.rating = await calculateAverage(course.reviews);
             //save course
             await course.save();
-            let user = await User.findById(course.author.id).exec();
+            let user = await User.findOne({slug:course.author.slug}).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "created a new review"
             }
@@ -71,7 +74,7 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
             await user.activity.push(activity);
             await user.save();
             req.flash("success", "Your review has been successfully added.");
-            res.redirect('/course/' + course._id);
+            res.redirect('/course/' + course.slug);
         });
     });
 });
@@ -95,7 +98,7 @@ router.get("/:review_id/edit", middleware.isLoggedIn, middleware.checkReviewOwne
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        res.render("reviews/edit", {course_id: req.params.id, review: foundReview});
+        res.render("reviews/edit", {course_slug: req.params.slug, review: foundReview});
     });
 });
 
@@ -106,7 +109,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findById(req.params.id).populate("reviews").exec(async function (err, course) {
+        Course.findOne({slug:req.params.slug}).populate("reviews").exec(async function (err, course) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -115,10 +118,10 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             course.rating = calculateAverage(course.reviews);
             //save changes
             await course.save();
-            let user = await User.findById(course.author.id).exec();
+            let user = await User.findOne({slug:course.author.slug}).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "updated a review"
             }
@@ -128,7 +131,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             let userb = await User.findById(req.user.id).exec();
             let newActivity = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "updated a review"
             }
@@ -136,7 +139,7 @@ router.put("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwnership
             await userb.activity.push(activity);
             await userb.save();
             req.flash("success", "Your review was successfully edited.");
-            res.redirect('/course/' + course._id);
+            res.redirect('/course/' + course.slug);
         });
     });
 });
@@ -148,7 +151,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             req.flash("error", err.message);
             return res.redirect("back");
         }
-        Course.findByIdAndUpdate(req.params.id, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, course) {
+        Course.findOneAndUpdate({slug:req.params.slug}, {$pull: {reviews: req.params.review_id}}, {new: true}).populate("reviews").exec(async function (err, course) {
             if (err) {
                 req.flash("error", err.message);
                 return res.redirect("back");
@@ -157,10 +160,10 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             course.rating = calculateAverage(course.reviews);
             //save changes
             await course.save();
-            let user = await User.findById(course.author.id).exec();
+            let user = await User.findOne({slug:course.author.slug}).exec();
             let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "deleted a review"
             }
@@ -170,7 +173,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             let userb = await User.findById(req.user.id).exec();
             let newActivity = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "deleted a review"
             }
@@ -178,7 +181,7 @@ router.delete("/:review_id", middleware.isLoggedIn, middleware.checkReviewOwners
             await userb.activity.push(activity);
             await userb.save();
             req.flash("success", "Your review was deleted successfully.");
-            res.redirect("/course/" + req.params.id);
+            res.redirect("/course/" + req.params.slug);
         });
     });
 });
@@ -191,7 +194,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
         let userb = await User.findById(req.user.id).exec();
         let newActivity = {
             username: req.user.username,
-            targetId: req.params.id,
+            targetSlug: req.params.slug,
             isCourse: true,
             message: "reported a review"
         }
@@ -199,7 +202,7 @@ router.put("/:review_id/report",middleware.isLoggedIn,async function(req,res){
         await userb.activity.push(activity);
         await userb.save();
         req.flash('success', 'Review reported!');
-        res.redirect("/course/" + req.params.id);
+        res.redirect("/course/" + req.params.slug);
     }catch(err){
         console.log(err);
         req.flash('error', err.message);

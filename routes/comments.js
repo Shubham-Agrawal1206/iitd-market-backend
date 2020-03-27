@@ -10,8 +10,7 @@ const middleware = require("../middleware");
 //Comments New
 router.get("/new", middleware.isLoggedIn, function(req, res){
     // find campground by id
-    console.log(req.params.id);
-    Course.findById(req.params.id, function(err, course){
+    Course.findOne({slug:req.params.slug}, function(err, course){
         if(err){
             console.log(err);
         } else {
@@ -23,7 +22,7 @@ router.get("/new", middleware.isLoggedIn, function(req, res){
 //Comments Create
 router.post("/", middleware.isLoggedIn, function(req, res){
    //lookup campground using ID
-   Course.findById(req.params.id, function(err, course){
+   Course.findOne({slug:req.params.slug}, function(err, course){
        if(err){
            console.log(err);
            res.redirect("/course");
@@ -33,33 +32,33 @@ router.post("/", middleware.isLoggedIn, function(req, res){
            if(err){
                console.log(err);
            } else {
-               let user = await User.findById(course.author.id).exec();
+               let user = await User.findOne({slug:course.author.slug}).exec();
                let newNotification = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "created a new comment"
               }
               let newActivity = {
                 username: req.user.username,
-                targetId: course.id,
+                targetSlug: course.slug,
                 isCourse: true,
                 message: "created a new comment"
               }
               let activity = await Activity.create(newActivity);
               let notification = await Notification.create(newNotification);
               await user.notifications.push(notification);
-              await user.notifications.push(activity);
+              await user.activity.push(activity);
               await user.save();
                //add username and id to comment
-               comment.author.id = req.user._id;
+               comment.author.slug = req.user.slug;
                comment.author.username = req.user.username;
                //save comment
                await comment.save();
                await course.comments.push(comment);
                await course.save();
                req.flash('success', 'Created a comment!');
-               return res.redirect('/course/' + course._id);
+               return res.redirect('/course/' + course.slug);
            }
         });
        }
@@ -67,17 +66,17 @@ router.post("/", middleware.isLoggedIn, function(req, res){
 });
 
 router.get("/:commentId/edit", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
-  res.render("comments/edit", {course_id: req.params.id, comment: req.comment});
+  res.render("comments/edit", {course_slug: req.params.slug, comment: req.comment});
 });
 
 router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
    Comment.findByIdAndUpdate(req.params.commentId, req.body.comment,async function(err, comment){
      try{
-       let course = await Course.findById(req.params.id).exec();
-       let user = await User.findById(course.author.id).exec();
+       let course = await Course.findOne({slug:req.params.slug}).exec();
+       let user = await User.findOne({slug:course.author.slug}).exec();
        let newNotification = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "edited a comment"
        }
@@ -87,14 +86,14 @@ router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, fu
        let userb = await User.findById(req.user.id).exec();
        let newActivity = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "edited a comment"
        }
        let activity = await Activity.create(newActivity);
        await userb.activity.push(activity);
        await userb.save();
-       res.redirect("/course/" + req.params.id);
+       res.redirect("/course/" + req.params.slug);
      }catch(err){
       console.log(err)
       req.flash('error', err.message);
@@ -105,16 +104,16 @@ router.put("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, fu
 
 router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment, function(req, res){
   // find campground, remove comment from comments array, delete comment in db
-  Course.findByIdAndUpdate(req.params.id, {
+  Course.findOneAndUpdate({slug:req.params.slug}, {
     $pull: {
       comments: req.comment.id
     }
   }, async function(err,course) {
     try{
-      let user = await User.findById(course.author.id).exec();
+      let user = await User.findOne({slug:course.author.slug}).exec();
       let newNotification = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "deleted a comment"
        }
@@ -124,7 +123,7 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
        let userb = await User.findById(req.user.id).exec();
        let newActivity = {
         username: req.user.username,
-        targetId: course.id,
+        targetSlug: course.slug,
         isCourse: true,
         message: "deleted a comment"
        }
@@ -133,7 +132,7 @@ router.delete("/:commentId", middleware.isLoggedIn, middleware.checkUserComment,
        await userb.save();
        await req.comment.remove();
        req.flash('error', 'Comment deleted!');
-       res.redirect("/course/" + req.params.id);
+       res.redirect("/course/" + req.params.slug);
     }catch(err){
       console.log(err)
       req.flash('error', err.message);
@@ -148,7 +147,7 @@ router.put("/:commentId/report", middleware.isLoggedIn,async function(req,res){
     comment.isReported = true;
     await comment.save();
     req.flash('success', 'Comment reported!');
-    res.redirect("/course/" + req.params.id);
+    res.redirect("/course/" + req.params.slug);
   }catch(err){
     console.log(err)
     req.flash('error', err.message);

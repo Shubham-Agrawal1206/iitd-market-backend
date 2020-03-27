@@ -23,9 +23,8 @@ var reviewSchema = new mongoose.Schema({
     },
     // author id and username fields
     author: {
-        id: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User"
+        slug: {
+            type: String
         },
         username: String
     },

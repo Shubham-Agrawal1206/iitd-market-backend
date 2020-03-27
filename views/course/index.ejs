@@ -33,7 +33,7 @@
                             <span class="fa fa-star <% if (course.rating > 3.5) { %> checked <% } %>"></span>
                             <span class="fa fa-star <% if (course.rating > 4.5) { %> checked <% } %>"></span>
                         <% } %>
-                       <a href="/course/<%= course._id %>" class="btn btn-primary">More Info</a>
+                       <a href="/course/<%= course.slug %>" class="btn btn-primary">More Info</a>
                    </div>
                 </div>
             </div>
