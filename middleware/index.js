@@ -50,7 +50,7 @@ module.exports = {
           next();
       } else {
         for(const instruct of foundCourse.instructor){
-          if(instruct.id.equals(req.user._id)){
+          if(instruct.uid.equals(req.user._id)){
            req.course = foundCourse;
            return next();
           }
