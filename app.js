@@ -81,6 +81,6 @@ app.use("/course/:slug/reviews", reviewRoutes);
 app.use("/users", userRoutes);
 app.use("/users/:slug/reviews", userReviewRoutes);
 
-app.listen(3000, function(){
+app.listen(process.env.PORT,process.env.IP, function(){
    console.log("The ReviewCourse Server Has Started!");
 });
