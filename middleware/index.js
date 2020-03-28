@@ -12,7 +12,12 @@ module.exports = {
             req.flash('error', 'User has been banned temporarily');
             return res.redirect('/course');
           }else{
-          return next();
+            if(req.user.isVerified){
+              return next()
+            }else{
+              req.flash("error", "You need to verify account first.");
+              return res.redirect("back");
+            }
           }
         }else{
           req.flash('error', 'User has been banned permanently');
@@ -29,7 +34,12 @@ module.exports = {
           req.flash('error', 'User has been banned temporarily');
           return res.status(500).send('/course');
         }else{
-        return next();
+          if(req.user.isVerified){
+            return next();
+          }else{
+            req.flash("error", "You need to verify account first.");
+            return res.status(500).send("/login");
+          }
         }
       }else{
         req.flash('error', 'User has been banned permanently');
@@ -171,6 +181,7 @@ checkUserReviewExistence : function (req, res, next) {
       req.flash('error', 'User has been banned temporarily');
       return res.redirect('back'); 
     }else{
+      if(user.isVerified){
       let newActivity = {
         username: user.username,
         targetSlug: user.slug,
@@ -181,6 +192,10 @@ checkUserReviewExistence : function (req, res, next) {
       await user.activity.push(activity);
       await user.save();
       next();
+    }else{
+      req.flash("error", "You need to verify account first.");
+      res.redirect("back");
+    }
     }
   },
   checkUserAct: async function(req,res,next){
