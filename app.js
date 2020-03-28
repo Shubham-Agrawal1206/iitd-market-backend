@@ -12,7 +12,8 @@ var express     = require("express"),
     Comment     = require("./models/comment"),
     User        = require("./models/user"),
     session = require("express-session"),
-    methodOverride = require("method-override");
+    methodOverride = require("method-override"),
+    MongoStore = require("connect-mongo")(require("express-session"));
 require("./models/notification");
 //requiring routes
 var commentRoutes    = require("./routes/comments"),
@@ -38,17 +39,26 @@ mongoose.connect(databaseUri)
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
+app.set('trust proxy',1);
 app.use(express.static(__dirname + "/public"));
 app.use(methodOverride('_method'));
 app.use(cookieParser('secret'));
 //require moment
 app.locals.moment = require('moment');
 
+
 // PASSPORT CONFIGURATION
 app.use(require("express-session")({
     secret: "Once again Rusty wins cutest dog!",
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    store: new MongoStore({
+      url:process.env.MONGODB_URI || 'mongodb://localhost/proxy'
+    }),
+    cookie:{
+      secure:true,
+      maxAge:6000
+    }
 }));
 
 app.use(flash());
