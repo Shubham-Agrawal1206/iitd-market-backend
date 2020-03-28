@@ -125,7 +125,6 @@ router.get("/", function(req, res){
 //CREATE - add new course to DB
 router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('image'), function(req, res){
   // get data from form and add to courses array
-  console.log(req.file);
   cloudinary.v2.uploader.upload(req.file.path,function(err,result){
     if(err) {
       req.flash('error', err.message);
@@ -146,7 +145,7 @@ router.post("/", middleware.isLoggedIn, middleware.isAllowed, upload.single('ima
   var studentNo = req.body.studentNo;
   geocoder1.geocode(req.body.location,async function (err, data) {
     if (err || data.status === 'ZERO_RESULTS') {
-      console.log(err,data);
+      console.log(err);
       req.flash('error', 'Invalid address');
       return res.redirect('back');
     }
@@ -212,7 +211,6 @@ router.get("/:slug", function(req, res){
       path:"reviews",
       options:{sort:{createdAt:-1}}
     }).exec(function(err, foundCourse){
-      console.log(foundCourse);
         if(err || !foundCourse){
             console.log(err);
             req.flash('error', 'Sorry, that course does not exist!');
@@ -390,7 +388,6 @@ router.put("/:slug/addinst",middleware.isLoggedIn,middleware.isAllowed,middlewar
     let instructor = {uslug:user.slug,username:user.username};
     await course.instructor.push(instructor);
     await course.save();
-    console.log(course);
     let userb = await User.findById(req.user.id).exec();
     let newActivity = {
       username: req.user.username,

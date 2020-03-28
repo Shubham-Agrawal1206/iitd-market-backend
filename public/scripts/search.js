@@ -12,9 +12,13 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
-              <em>No reviews yet.</em>
               <h5 class="card-title">${ course.title }</h5>
+              <div class="d-flex justify-content-between align-items-center">
+              <small>
+                <em>No reviews yet.</em>
+              </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>
@@ -25,13 +29,17 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
+            <h5 class="card-title">${ course.title }</h5>
+            <div class="d-flex justify-content-between align-items-center">
+            <small>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
-              <h5 class="card-title">${ course.title }</h5>
+            </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>
@@ -42,13 +50,17 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
+            <h5 class="card-title">${ course.title }</h5>
+            <div class="d-flex justify-content-between align-items-center">
+            <small>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
-              <h5 class="card-title">${ course.title }</h5>
+            </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>
@@ -59,13 +71,17 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
+            <h5 class="card-title">${ course.title }</h5>
+            <div class="d-flex justify-content-between align-items-center">
+            <small>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked "></span>
               <span class="fa fa-star"></span>
               <span class="fa fa-star"></span>
-              <h5 class="card-title">${ course.title }</h5>
+            </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>
@@ -76,13 +92,17 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
+            <h5 class="card-title">${ course.title }</h5>
+            <div class="d-flex justify-content-between align-items-center">
+            <small>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star"></span>
-              <h5 class="card-title">${ course.title }</h5>
+              </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>
@@ -93,13 +113,17 @@ $('#course-search').on('input', function() {
           <div class="card">
             <img class="card-img-top" src="${ course.image }">
             <div class="card-body">
+            <h5 class="card-title">${ course.title }</h5>
+            <div class="d-flex justify-content-between align-items-center">
+            <small>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
               <span class="fa fa-star checked"></span>
-              <h5 class="card-title">${ course.title }</h5>
+            </small>
               <a href="/course/${ course.slug }" class="btn btn-primary">More Info</a>
+              </div>
             </div>
           </div>
         </div>

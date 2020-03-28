@@ -123,7 +123,6 @@ module.exports = {
   },
   checkReviewExistence : function (req, res, next) {
     if (req.isAuthenticated()) {
-      console.log("re");
       Course.findOne({slug:req.params.slug}).populate("reviews").exec(function (err, foundCourse) {
         if (err || !foundCourse) {
           req.flash("error", "Course not found.");
@@ -131,7 +130,6 @@ module.exports = {
         } else {
           // check if req.user._id exists in foundCourse.reviews
           var foundUserReview = foundCourse.reviews.some(function (review) {
-            console.log(review);
             return review.author.slug === req.user.slug;
           });
           if (foundUserReview) {
@@ -149,7 +147,6 @@ module.exports = {
 },
 checkUserReviewExistence : function (req, res, next) {
   if (req.isAuthenticated()) {
-    console.log(req.user);
     User.findOne({slug:req.params.slug}).populate("reviews").exec(function (err, foundUser) {
       if (err || !foundUser) {
         req.flash("error", "User not found.");

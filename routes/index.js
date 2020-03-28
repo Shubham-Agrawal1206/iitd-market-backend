@@ -85,7 +85,6 @@ router.post("/register", function(req, res){
                 'http://' + req.headers.host + '/users/token/' + token + '/notyours\n\n'
             };
             smtpTransport.sendMail(mailOptions, function(err) {
-              console.log('mail sent');
               req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
               done(err, 'done');
             });
@@ -165,7 +164,6 @@ router.post('/forgot', function(req, res, next) {
             'If you did not request this, please ignore this email and your password will remain unchanged.\n'
         };
         smtpTransport.sendMail(mailOptions, function(err) {
-          console.log('mail sent');
           req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
           done(err, 'done');
         });
@@ -286,7 +284,6 @@ router.get("/report",middleware.isAdmin,async function(req,res){
   try{
     const comments = await Comment.find({isReported:true}).exec();
     const reviews = await Review.find({isReported:true}).exec();
-    console.log(comments,reviews);
     res.render("report",{comments,reviews});
   }catch(err){
     console.log(err);

@@ -102,7 +102,8 @@ body {
 }
 
 #sticky-footer {
-  flex-shrink: none;
+  flex-shrink: 0;
+  display: flex;
 }
 
 .py-4{

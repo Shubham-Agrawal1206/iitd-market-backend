@@ -50,7 +50,6 @@ router.post("/", middleware.isLoggedIn, middleware.checkReviewExistence, functio
                 return res.redirect("back");
             }
             //add author username/id and associated course to the review
-            console.log(req.user);
             review.author.slug = req.user.slug;
             review.author.username = req.user.username;
             review.course = course;

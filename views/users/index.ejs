@@ -21,6 +21,8 @@
                    <img class="card-img-top" src="<%= user.avatar %>">
                    <div class="card-body">
                        <h5 class="card-title"><%= user.username %></h5>
+                       <div class="d-flex justify-content-between align-items-center">
+                         <small>
                        <% if (user.rating === 0) { %>
                             <em>No reviews yet.</em>
                         <% } else { %>
@@ -30,7 +32,9 @@
                             <span class="fa fa-star <% if (user.rating > 3.5) { %> checked <% } %>"></span>
                             <span class="fa fa-star <% if (user.rating > 4.5) { %> checked <% } %>"></span>
                         <% } %>
+                         </small>
                        <a href="/users/<%= user.slug %>" class="btn btn-primary">More Info</a>
+                       </div>
                    </div>
                 </div>
             </div>

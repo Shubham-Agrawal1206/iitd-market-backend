@@ -7,7 +7,6 @@ $(document).ready(function(){
             type: "PUT",
             url: window.location.origin + "/users/" + userSlug + "/reviews/" + reviewId + "/upvote",
             error: function(a,b,c){
-                console.log(a,b,c);
                 window.location.replace(window.location.origin+a.responseText);
             },
             success: function(data){
@@ -34,7 +33,6 @@ $(document).ready(function(){
             type: "PUT",
             url: window.location.origin + "/users/"+ userSlug + "/reviews/" + reviewId + "/downvote",
             error: function(a,b,c){
-                console.log(a,b,c);
                 window.location.replace(window.location.origin+a.responseText);
             },
             success: function(data){
