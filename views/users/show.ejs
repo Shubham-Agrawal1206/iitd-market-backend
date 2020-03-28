@@ -33,11 +33,11 @@
     <% if(currentUser && (currentUser.isProfessor || currentUser.isAdmin)){ %>
         <h3><%=user.username%>'s courses:</h3>
         <div class="row">
+          <ul>
           <% course.forEach(function(courseq){%>
-            <ul>
               <li><a href="/course/<%=courseq.slug%>"><%=courseq.title%></a></li>
-            </ul>
           <% }) %>
+        </ul>
         </div>
     <a class="btn btn-dark" href="/users/<%=user.slug%>/activity">Show Recent Activity</a>
       <% } %>
