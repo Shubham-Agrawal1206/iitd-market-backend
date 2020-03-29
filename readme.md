@@ -7,3 +7,7 @@
 
 ### https://rocky-escarpment-58110.herokuapp.com/
 **Deployed Link**
+
+#### Some Admin Link:
+**/report** --> *to see reported reviews*
+**/activity/admin** --> *to see activity of a user*
