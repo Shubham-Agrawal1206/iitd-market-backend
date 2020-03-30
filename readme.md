@@ -11,3 +11,7 @@
 #### Some Admin Link:
 **/report** --> *to see reported reviews*
 **/activity/admin** --> *to see activity of a user*
+
+#### Update
+**Google/Facebook Auth button not working yet**
+*Please do not click on it*
