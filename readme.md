@@ -31,3 +31,4 @@ Note - Only Professor or admin can add course or an instructor to a particular c
 6. Upvote And Downvote Features
 7. Follow a particular user so that you will know when a user adds/edit/delete a particular course
 8. Account Verification
+9. IITD multiple email check
