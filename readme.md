@@ -11,3 +11,23 @@
 #### Some Admin Link:
 **/report** --> *to see reported reviews*
 **/activity/admin** --> *to see activity of a user*
+
+#### Update
+**Google/Facebook Auth button not working yet**
+*Please do not click on it*
+
+
+### Admin Code --> noobmaster64
+### Professor Code --> somethingnot
+
+Note - Only Professor or admin can add course or an instructor to a particular course
+
+## Features
+1. Notification
+2. Comment on course
+3. Ban a user for any no. of days or permanently (Admin Only)
+4. Admin can monitor activity
+5. Fuzzy Search on index pages of course and users
+6. Upvote And Downvote Features
+7. Follow a particular user so that you will know when a user adds/edit/delete a particular course
+8. Account Verification
