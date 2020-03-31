@@ -203,5 +203,22 @@ checkUserReviewExistence : function (req, res, next) {
       req.flash('error', 'You are not allowed to see this');
       return res.redirect('/users'); 
     }
+  },
+  checkRegister:async function(req,res,next){
+    var exp = /iitd\.ac\.in$/gm
+    if(!exp.test(req.body.email)){
+      next()
+    }else{
+      var kebid = /^(\w+)/gm
+      kebid.lastIndex = 0
+      var result = kebid.exec(req.body.email)
+      let user = await User.findOne({email:{$regex:`^${result[0]}`,$options:'gm'}})
+      if(user){
+        req.flash('error', 'You are already registered with email ' + user.email);
+        return res.redirect('/register');
+      }else{
+        next()
+      }
+    }
   }
 }
