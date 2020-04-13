@@ -54,11 +54,7 @@ app.use(require("express-session")({
     saveUninitialized: false,
     store: new MongoStore({
       url:process.env.MONGODB_URI || 'mongodb://localhost/proxy'
-    }),
-    cookie:{
-      secure:true,
-      maxAge:6000
-    }
+    })
 }));
 
 app.use(flash());
