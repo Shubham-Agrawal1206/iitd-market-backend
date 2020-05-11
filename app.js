@@ -28,7 +28,7 @@ var itemRoutes = require("./routes/item"),
 // assign mongoose promise library and connect to database
 mongoose.Promise = global.Promise;
 
-const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/proxy';
+const databaseUri = process.env.MONGODB_URI || 'mongodb://localhost/iitd';
 
 mongoose.connect(databaseUri)
       .then(() => console.log(`Database connected`))
@@ -65,7 +65,7 @@ app.use(async function(req, res, next){
    if(req.user) {
     try {
       let user = await User.findById(req.user._id).populate('notifs', null, { isRead: false }).exec();
-      res.locals.notifications = user.notifications.reverse();
+      res.locals.notifications = user.notifs.reverse();
     } catch(err) {
       console.log(err.message);
     }

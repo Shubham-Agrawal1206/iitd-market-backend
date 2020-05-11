@@ -40,7 +40,7 @@ router.get("/", async (req, res) => {
   if (req.query.search) {
     const regex = new RegExp(escapeRegex(req.query.search), 'gi');
     let allItems = await Item.find({ title: regex }).skip((perPage * pageNumber) - perPage).limit(perPage).exec();
-    let count = await Item.count({ title: regex }).exec();
+    let count = await Item.countDocuments({ title: regex }).exec();
     if (allItems.length < 1) {
       noMatch = "No items match that query, please try again.";
     }
@@ -54,7 +54,7 @@ router.get("/", async (req, res) => {
   } else {
     // get all campgrounds from DB
     let allItems = await Item.find({}).skip((perPage * pageNumber) - perPage).limit(perPage).exec();
-    let count = await Item.count().exec();
+    let count = await Item.countDocuments().exec();
     res.json({
       items: allItems,
       current: pageNumber,
@@ -114,7 +114,7 @@ router.post("/", middleware.isLoggedIn, async (req, res) => {
   let users = await User.find({ folCategory: item.category }).exec();
   let newNotification = {
     username: req.user.username,
-    targetSlug: course.slug,
+    targetSlug: '',
     message: "created a new course"
   }
   // Socket !!
@@ -167,7 +167,7 @@ router.put("/:id", middleware.isLoggedIn, middleware.checkUserItem, async (req, 
   let users = await User.find({ folCategory: req.item.category }).exec();
   let newNotification = {
     username: req.user.username,
-    targetSlug: course.slug,
+    targetSlug: '',
     message: "created a new course"
   }
   // Socket !!

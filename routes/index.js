@@ -10,6 +10,7 @@ var middleware = require("../middleware");
 //handle sign up logic
 router.post("/register", middleware.checkRegister, (req, res) => {
   var object = {
+    username: req.body.username,
     avatar: req.body.avatar,
     contact_number: req.body.contactNumber,
     entry_number: req.body.entryNumber,
@@ -26,9 +27,9 @@ router.post("/register", middleware.checkRegister, (req, res) => {
   User.register(newUser, req.body.password, (err, user) => {
     if (err) {
       console.log(err);
-      return res.render("register", { error: err.message });
+      return res.send(err.message);
     }
-    res.redirect('/register');
+    res.send('/register');
   });
 });
 
@@ -38,7 +39,7 @@ router.post("/login", passport.authenticate("local",
     successRedirect: "/item",
     failureRedirect: "/login",
     failureFlash: true,
-    successFlash: "Welcome to ReviewCourse!"
+    successFlash: "Welcome!"
   }), (req, res) => { });
 
 // logout route
@@ -51,6 +52,7 @@ router.get("/logout", (req, res) => {
 // follow user
 router.get('/follow/:slug', middleware.isLoggedIn, async (req, res) => {
   try {
+    console.log(req.user);
     let user = await User.findById(req.user._id).exec();
     await user.folCategory.push(req.params.slug);
     await user.save();
