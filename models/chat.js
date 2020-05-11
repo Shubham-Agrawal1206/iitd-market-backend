@@ -26,8 +26,8 @@ var chatSchema = new mongoose.Schema({
     timestamps: true
 })
 
-const ArrLen = (val) => val.length === 2
+// const ArrLen = (val) => val.length === 2
 
-chatSchema.path('users').validate(ArrLen, '{PATH} exceeds length');
+// chatSchema.path('users').validate(ArrLen, '{PATH} exceeds length');
 
 module.exports = mongoose.model('Chat', chatSchema);

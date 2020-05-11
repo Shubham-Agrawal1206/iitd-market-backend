@@ -8,18 +8,15 @@ var express     = require("express"),
     cookieParser = require("cookie-parser"),
     LocalStrategy = require("passport-local"),
     flash        = require("connect-flash"),
-    Course  = require("./models/course"),
-    Comment     = require("./models/comment"),
+    Item  = require("./models/item"),
     User        = require("./models/user"),
     session = require("express-session"),
     methodOverride = require("method-override"),
     MongoStore = require("connect-mongo")(require("express-session"));
 require("./models/notification");
 //requiring routes
-var commentRoutes    = require("./routes/comments"),
-    courseRoutes = require("./routes/course"),
+var itemRoutes = require("./routes/item"),
     indexRoutes      = require("./routes/index"),
-    reviewRoutes     = require("./routes/review"),
     userReviewRoutes = require("./routes/userReview"),
     userRoutes = require("./routes/users");
 
@@ -38,7 +35,6 @@ mongoose.connect(databaseUri)
       .catch(err => console.log(`Database connection error: ${err.message}`));
 
 app.use(bodyParser.urlencoded({extended: true}));
-app.set("view engine", "ejs");
 app.set('trust proxy',1);
 app.use(express.static(__dirname + "/public"));
 app.use(methodOverride('_method'));
@@ -49,11 +45,11 @@ app.locals.moment = require('moment');
 
 // PASSPORT CONFIGURATION
 app.use(require("express-session")({
-    secret: "Once again Rusty wins cutest dog!",
+    secret: "Random Words have power!",
     resave: false,
     saveUninitialized: false,
     store: new MongoStore({
-      url:process.env.MONGODB_URI || 'mongodb://localhost/proxy'
+      url:process.env.MONGODB_URI || 'mongodb://localhost/iitd'
     })
 }));
 
@@ -68,7 +64,7 @@ app.use(async function(req, res, next){
    res.locals.currentUser = req.user;
    if(req.user) {
     try {
-      let user = await User.findById(req.user._id).populate('notifications', null, { isRead: false }).exec();
+      let user = await User.findById(req.user._id).populate('notifs', null, { isRead: false }).exec();
       res.locals.notifications = user.notifications.reverse();
     } catch(err) {
       console.log(err.message);
@@ -81,12 +77,11 @@ app.use(async function(req, res, next){
 
 
 app.use("/", indexRoutes);
-app.use("/course", courseRoutes);
-app.use("/course/:slug/comments", commentRoutes);
-app.use("/course/:slug/reviews", reviewRoutes);
+app.use("/item", courseRoutes);
+app.use("/item/:id/comments", commentRoutes);
 app.use("/users", userRoutes);
-app.use("/users/:slug/reviews", userReviewRoutes);
+app.use("/users/:id/reviews", userReviewRoutes);
 
 app.listen(process.env.PORT,process.env.IP, function(){
-   console.log("The ReviewCourse Server Has Started!");
+   console.log("The Server Has Started!");
 });
