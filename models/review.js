@@ -23,23 +23,16 @@ var reviewSchema = new mongoose.Schema({
     },
     // author id and username fields
     author: {
-        slug: {
-            type: String
-        },
-        username: String
-    },
-    // course associated with the review
-    course: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Course"
+        ref: 'User'
     },
     // user associated with the review
     user: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: 'User'
     },
-    isReported:{type:Boolean,default:false},
-    isAnonymous:{type:Boolean,default:false}
+    isReported: { type: Boolean, default: false },
+    isAnonymous: { type: Boolean, default: false }
 }, {
     // if timestamps are set to true, mongoose assigns createdAt and updatedAt fields to your schema, the type assigned is Date.
     timestamps: true
