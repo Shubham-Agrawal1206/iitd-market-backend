@@ -17,9 +17,17 @@ var chatSchema = new mongoose.Schema({
         {
             type: String
         }
-    ]
+    ],
+    active: {
+        type: Boolean,
+        default: true
+    }
 }, {
     timestamps: true
 })
 
-module.exports = mongoose.model('Chat', chatSchema)
+const ArrLen = (val) => val.length === 2
+
+chatSchema.path('users').validate(ArrLen, '{PATH} exceeds length');
+
+module.exports = mongoose.model('Chat', chatSchema);

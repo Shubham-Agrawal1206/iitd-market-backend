@@ -1,313 +1,92 @@
 var express = require("express");
-var router  = express.Router();
+var router = express.Router();
 var passport = require("passport");
 var User = require("../models/user");
-var Course = require("../models/course");
-var Comment = require("../models/comment");
+var Item = require("../models/item");
 var Review = require("../models/review");
-var Activity = require("../models/activity");
 var Notification = require("../models/notification");
-var pathx = require("path");
-var async = require("async");
-var nodemailer = require("nodemailer");
-var crypto = require("crypto");
 var middleware = require("../middleware");
 
-//root route
-router.get("/", function(req, res){
-    res.sendFile(pathx.join(__dirname+'/../views/landing'+'/index.html'));
-});
-
-// show register form
-router.get("/register", function(req, res){
-   res.render("register", {page: 'register'}); 
-});
-
 //handle sign up logic
-router.post("/register",middleware.checkRegister, function(req, res){
-    var newUser = new User({username: req.body.username,avatar: req.body.avatar,description:req.body.description,firstName:req.body.firstName,lastName:req.body.lastName,email:req.body.email});
-    if(req.body.adminCode === process.env.ADMIN_CODE) {
-      newUser.isAdmin = true;
+router.post("/register", middleware.checkRegister, (req, res) => {
+  var object = {
+    avatar: req.body.avatar,
+    contact_number: req.body.contactNumber,
+    entry_number: req.body.entryNumber,
+    hostel: req.body.hostel,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+    description: req.body.description
+  }
+  var newUser = new User(object);
+  if (req.body.adminCode === process.env.ADMIN_CODE) {
+    newUser.isAdmin = true;
+  }
+  User.register(newUser, req.body.password, (err, user) => {
+    if (err) {
+      console.log(err);
+      return res.render("register", { error: err.message });
     }
-    if(req.body.profCode === process.env.PROF_CODE){
-      newUser.isProfessor = true;
-    }
-    User.register(newUser, req.body.password,async function(err, user){
-        if(err){
-            console.log(err);
-            return res.render("register", {error: err.message});
-        }
-        let newActivity = {
-          username: user.username,
-          targetSlug: user.slug,
-          isCourse: false,
-          message: "registered"
-        }
-        let activity = await Activity.create(newActivity);
-        await user.activity.push(activity);
-        async.waterfall([
-          function(done) {
-            crypto.randomBytes(20, function(err, buf) {
-              var token = buf.toString('hex');
-              done(err, token);
-            });
-          },
-          function(token, done) {
-            User.findOne({ email: req.body.email }, function(err, user) {
-              if (!user) {
-                req.flash('error', 'No account with that email address exists.');
-                return res.redirect('/forgot');
-              }
-      
-              user.resetPasswordToken = token;
-      
-              user.save(function(err) {
-                done(err, token, user);
-              });
-            });
-          },
-          function(token, user, done) {
-            var smtpTransport = nodemailer.createTransport({
-              service: 'Gmail', 
-              auth: {
-                user: 'emailxx365@gmail.com',
-                pass: process.env.GMAILPW
-              }
-            });
-            var mailOptions = {
-              to: user.email,
-              from: 'emailxx365@gmail.com',
-              subject: 'Node.js User Registration Verification',
-              text: 'You are receiving this because you (or someone else) have requested to make a new account.\n\n' +
-                'Please click on the following link, or paste this into your browser to complete the verification process:\n\n' +
-                'http://' + req.headers.host + '/users/token/' + token + '\n\n' +
-                'If you did not request this, please click this link and your account will be removed.\n\n' +
-                'http://' + req.headers.host + '/users/token/' + token + '/notyours\n\n'
-            };
-            smtpTransport.sendMail(mailOptions, function(err) {
-              req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-              done(err, 'done');
-            });
-          }
-        ], function(err) {
-          if (err) return next(err);
-          res.redirect('/register');
-        });
-    });
-});
-
-//show login form
-router.get("/login", function(req, res){
-   res.render("login", {page: 'login'}); 
+    res.redirect('/register');
+  });
 });
 
 //handling login logic
-router.post("/login",middleware.checkUser,passport.authenticate("local", 
-{
-    successRedirect: "/course",
+router.post("/login", passport.authenticate("local",
+  {
+    successRedirect: "/item",
     failureRedirect: "/login",
     failureFlash: true,
     successFlash: "Welcome to ReviewCourse!"
-}),function(req, res){});
+  }), (req, res) => { });
 
 // logout route
-router.get("/logout", function(req, res){
-   req.logout();
-   req.flash("success", "See you later!");
-   res.redirect("/course");
+router.get("/logout", (req, res) => {
+  req.logout();
+  req.flash("success", "See you later!");
+  res.redirect("/item");
 });
 
-//forget pasword route
-router.get("/forgot",function(req,res){
-    res.render("forgot");
-}); 
-
-
-router.post('/forgot', function(req, res, next) {
-    async.waterfall([
-      function(done) {
-        crypto.randomBytes(20, function(err, buf) {
-          var token = buf.toString('hex');
-          done(err, token);
-        });
-      },
-      function(token, done) {
-        User.findOne({ email: req.body.email }, function(err, user) {
-          if (!user) {
-            req.flash('error', 'No account with that email address exists.');
-            return res.redirect('/forgot');
-          }
-  
-          user.resetPasswordToken = token;
-          user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-  
-          user.save(function(err) {
-            done(err, token, user);
-          });
-        });
-      },
-      function(token, user, done) {
-        var smtpTransport = nodemailer.createTransport({
-          service: 'Gmail', 
-          auth: {
-            user: 'emailxx365@gmail.com',
-            pass: process.env.GMAILPW
-          }
-        });
-        var mailOptions = {
-          to: user.email,
-          from: 'emailxx365@gmail.com',
-          subject: 'Node.js Password Reset',
-          text: 'You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n' +
-            'Please click on the following link, or paste this into your browser to complete the process:\n\n' +
-            'http://' + req.headers.host + '/reset/' + token + '\n\n' +
-            'If you did not request this, please ignore this email and your password will remain unchanged.\n'
-        };
-        smtpTransport.sendMail(mailOptions, function(err) {
-          req.flash('success', 'An e-mail has been sent to ' + user.email + ' with further instructions.');
-          done(err, 'done');
-        });
-      }
-    ], function(err) {
-      if (err) return next(err);
-      res.redirect('/forgot');
-    });
-  });
-  
-router.get('/reset/:token', function(req, res) {
-    User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-      if (!user) {
-        req.flash('error', 'Password reset token is invalid or has expired.');
-        return res.redirect('/forgot');
-      }
-      res.render('reset', {token: req.params.token});
-    });
-});
-  
-router.post('/reset/:token', function(req, res) {
-    async.waterfall([
-      function(done) {
-        User.findOne({ resetPasswordToken: req.params.token, resetPasswordExpires: { $gt: Date.now() } }, function(err, user) {
-          if (!user) {
-            req.flash('error', 'Password reset token is invalid or has expired.');
-            return res.redirect('back');
-          }
-          if(req.body.password === req.body.confirm) {
-            user.setPassword(req.body.password, function(err) {
-              user.resetPasswordToken = undefined;
-              user.resetPasswordExpires = undefined;
-  
-              user.save(function(err) {
-                req.logIn(user, function(err) {
-                  done(err, user);
-                });
-              });
-            })
-          } else {
-              req.flash("error", "Passwords do not match.");
-              return res.redirect('back');
-          }
-        });
-      },
-      function(user, done) {
-        var smtpTransport = nodemailer.createTransport({
-          service: 'Gmail', 
-          auth: {
-            user: 'emailxx365@gmail.com',
-            pass: process.env.GMAILPW
-          }
-        });
-        var mailOptions = {
-          to: user.email,
-          from: 'emailxx365@mail.com',
-          subject: 'Your password has been changed',
-          text: 'Hello,\n\n' +
-            'This is a confirmation that the password for your account ' + user.email + ' has just been changed.\n'
-        };
-        smtpTransport.sendMail(mailOptions, function(err) {
-          req.flash('success', 'Success! Your password has been changed.');
-          done(err);
-        });
-      }
-    ], function(err) {
-      res.redirect('/course');
-    });
-});
-  
 // follow user
-router.get('/follow/:slug', middleware.isLoggedIn, async function(req, res) {
+router.get('/follow/:slug', middleware.isLoggedIn, async (req, res) => {
   try {
-    let user = await User.findOne({slug:req.params.slug}).exec();
-    await user.followers.push(req.user._id);
+    let user = await User.findById(req.user._id).exec();
+    await user.folCategory.push(req.params.slug);
     await user.save();
-    req.flash('success', 'Successfully followed ' + user.username + '!');
-    res.redirect('/users/' + req.params.slug);
-  } catch(err) {
+    await req.login(user);
+    req.flash('success', 'Successfully followed ' + req.params.slug + '!');
+    res.redirect('/users/' + req.user.id);
+  } catch (err) {
     req.flash('error', err.message);
     return res.redirect('back');
   }
 });
 
 // view all notifications
-router.get('/notifications', middleware.isLoggedIn, async function(req, res) {
+router.get('/notifications', middleware.isLoggedIn, async (req, res) => {
   try {
     let user = await User.findById(req.user._id).populate({
-      path: 'notifications',
+      path: 'notifs',
       options: { sort: { "_id": -1 } }
     }).exec();
     let allNotifications = user.notifications;
-    res.render('notifications/index', { allNotifications });
-  } catch(err) {
+    res.json(allNotifications);
+  } catch (err) {
     req.flash('error', err.message);
     return res.redirect('back');
   }
 });
 
-// handle notification
-router.get('/notifications/:id', middleware.isLoggedIn, async function(req, res) {
+router.get("/report", middleware.isAdmin, async (req, res) => {
   try {
-    let notification = await Notification.findById(req.params.id);
-    notification.isRead = true;
-    await notification.save();
-    if(notification.isCourse) {
-      res.redirect(`/course/${notification.targetSlug}`);
-    }else{
-      res.redirect(`/users/${notification.targetSlug}`);
-    }
-  } catch(err) {
-    req.flash('error', err.message);
-    return res.redirect('back');
-  }
-});
-
-router.get("/report",middleware.isAdmin,async function(req,res){
-  try{
-    const comments = await Comment.find({isReported:true}).exec();
-    const reviews = await Review.find({isReported:true}).exec();
-    res.render("report",{comments,reviews});
-  }catch(err){
+    const items = await Item.find({ isReported: true }).exec();
+    const reviews = await Review.find({ isReported: true }).exec();
+    res.render("report", { items, reviews });
+  } catch (err) {
     console.log(err);
     req.flash('error', err.message);
     return res.redirect('back');
-  }
-})
-
-router.get("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,function(req,res){
-  res.render("users/actAdmin");
-})
-
-router.post("/activity/admin",middleware.isLoggedIn,middleware.isAdmin,async function(req,res){
-  try{
-    let user = await User.findOne({username:req.body.username}).exec();
-    if(!user){
-      req.flash('error', 'No user found');
-      return res.redirect('/course');
-    }else{
-      return res.redirect('/users/'+user.slug +'/activity');
-    }
-  }catch(err){
-    req.flash('error', err.message);
-    return res.redirect('/course');
   }
 })
 
