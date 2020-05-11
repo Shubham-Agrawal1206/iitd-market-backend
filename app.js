@@ -77,8 +77,7 @@ app.use(async function(req, res, next){
 
 
 app.use("/", indexRoutes);
-app.use("/item", courseRoutes);
-app.use("/item/:id/comments", commentRoutes);
+app.use("/item", itemRoutes);
 app.use("/users", userRoutes);
 app.use("/users/:id/reviews", userReviewRoutes);
 
