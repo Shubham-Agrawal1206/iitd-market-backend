@@ -1,7 +1,6 @@
 var Item = require('../models/item');
 var Review = require("../models/review");
 var User = require("../models/user");
-var Activity = require("../models/activity");
 
 module.exports = {
   isLoggedIn: async (req, res, next) => {
